@@ -1,0 +1,2024 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0b0e13">
+<meta name="color-scheme" content="dark">
+<script>try{if(localStorage.getItem('dndThemeV1')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}</script>
+<title>Интерактивный лист персонажа D&D</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0b0d11;--surface:#12161c;--surface2:#171c24;--field:#0d1015;
+  --line:rgba(212,179,122,.16);--line-strong:rgba(212,179,122,.34);
+  --text:#ece6d8;--muted:#9b9585;--gold:#d4b37a;--gold-dim:#8f7a52;--gold-bg:rgba(212,179,122,.08);
+  --temp:#7fb2d9;--red:#cf7a73;--red-bg:rgba(192,96,90,.12);--red-line:rgba(192,96,90,.45);--ok:#8fbf8a;--warn:#e0a85c;
+  --serif:"Palatino Linotype","Book Antiqua",Palatino,Georgia,"Times New Roman",serif;
+  --sans:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;background:var(--bg)}
+body{margin:0;color:var(--text);font:15px/1.5 var(--sans);background:radial-gradient(900px 380px at 50% -140px,rgba(212,179,122,.09),transparent 70%),var(--bg);-webkit-text-size-adjust:100%}
+h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:.01em}
+h2{display:flex;align-items:center;gap:10px;margin:0 0 16px;font-size:19px;color:var(--gold)}
+h2::before{content:"";width:7px;height:7px;flex:none;background:var(--gold-dim);transform:rotate(45deg)}
+h3{margin:0 0 10px;font-size:15px;color:#d9c8a4}
+.wrap{max-width:1120px;margin:0 auto;padding:0 18px}
+
+/* Шапка */
+header{padding:30px 0 24px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:18px}
+.brand-text{min-width:0;flex:1}
+h1{margin:0;font-size:clamp(26px,5vw,38px);line-height:1.15;color:var(--gold);outline:none;overflow-wrap:anywhere}
+header p{margin:4px 0 0;color:var(--muted);outline:none}
+.hint{margin-top:8px;font-size:12px;color:var(--gold-dim)}
+[contenteditable]:focus{box-shadow:0 0 0 3px rgba(212,179,122,.16);border-radius:6px}
+
+/* Основная раскладка */
+main.wrap{padding-top:32px;padding-bottom:72px}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.panel{min-width:0;padding:20px;background:var(--surface);border:1px solid var(--line);border-radius:16px}
+.span-12{grid-column:span 12}.span-6{grid-column:span 6}
+.panel .panel{background:var(--surface2)}
+
+/* Поля */
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;align-items:end}
+.fields+.fields{margin-top:14px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field>label,.small-label,.tag{font-size:12px;letter-spacing:.02em;color:var(--muted)}
+.small-label{display:block;margin:10px 0 5px}
+input,select,textarea{width:100%;padding:10px 12px;color:var(--text);background:var(--field);border:1px solid var(--line);border-radius:10px;font:inherit;transition:border-color .15s,box-shadow .15s}
+input::placeholder,textarea::placeholder{color:#686b70}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold-dim);box-shadow:0 0 0 3px rgba(212,179,122,.12)}
+input[readonly]{color:var(--gold);border-style:dashed;background:transparent}
+textarea{resize:none;overflow:hidden;line-height:1.5}
+@media(pointer:coarse){input,select,textarea,.rich,rt-box{font-size:16px}}   /* iOS не увеличивает страницу при фокусе */
+select{appearance:none;-webkit-appearance:none;padding-right:34px;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23d4b37a' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center}
+select option{background:#12161c;color:var(--text)}
+input[type=checkbox]{appearance:none;-webkit-appearance:none;display:inline-grid;place-content:center;width:19px;height:19px;flex:none;padding:0;margin:0;background:transparent;border:1.5px solid var(--gold-dim);border-radius:50%;cursor:pointer}
+input[type=checkbox]::after{content:"";width:9px;height:9px;border-radius:50%;background:var(--gold);transform:scale(0);transition:transform .12s}
+input[type=checkbox]:checked{border-color:var(--gold)}
+input[type=checkbox]:checked::after{transform:scale(1)}
+input[type=file]{padding:8px;color:var(--muted)}
+input[type=file]::file-selector-button{margin-right:10px;padding:6px 12px;color:var(--text);background:transparent;border:1px solid var(--line-strong);border-radius:8px;cursor:pointer}
+.checkline{display:flex;align-items:center;gap:9px;min-height:24px;cursor:pointer}
+
+/* Кнопки */
+button{padding:9px 15px;color:var(--text);background:transparent;border:1px solid var(--line-strong);border-radius:10px;font:500 14px var(--sans);cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+button:hover{border-color:var(--gold);background:var(--gold-bg)}
+button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+button.primary{color:#1a1409;background:var(--gold);border-color:var(--gold);font-weight:600}
+button.primary:hover{background:#e3c791}
+button.danger{color:var(--red);border-color:var(--red-line)}
+button.danger:hover{background:var(--red-bg);border-color:var(--red)}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px}
+.row.actions{margin-top:16px;gap:10px}
+
+/* Тексты */
+.muted,.footer-note,.section-note{font-size:13px;color:var(--muted)}
+.footer-note{margin-top:14px;font-size:12px}.section-note{margin-bottom:14px}
+.fields+.muted{margin-top:14px}
+#saveStatus{color:var(--gold-dim)}
+.empty{margin:10px 0;font-size:13px;color:var(--muted)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pill{display:inline-block;padding:3px 11px;font-size:12px;color:var(--gold);border:1px solid var(--line-strong);border-radius:999px;white-space:nowrap}
+.value{font:600 16px var(--serif);color:var(--gold);white-space:nowrap}
+
+/* Характеристики */
+.stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.stat{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px 12px;background:var(--surface2);border:1px solid var(--line);border-radius:14px}
+.stat label{font-size:12px;color:var(--muted)}
+.stat input{width:100%;padding:0;font:600 32px/1.1 var(--serif);text-align:center;color:var(--text);background:transparent;border:0;border-radius:6px;-moz-appearance:textfield;appearance:textfield}
+.stat input::-webkit-inner-spin-button,.stat input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.stat input:focus{box-shadow:none;background:var(--gold-bg)}
+.mod{min-width:48px;padding:1px 12px;font:600 14px var(--sans);text-align:center;color:var(--gold);border:1px solid var(--line-strong);border-radius:999px}
+
+/* Спасброски и навыки */
+.list{display:grid}
+.item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item .sub{margin:3px 0 0 28px;font-size:12px;color:var(--muted)}
+.item .sub input[type=checkbox]{width:15px;height:15px}
+.item .sub input[type=checkbox]::after{width:7px;height:7px}
+
+/* Карточки: оружие, особенности, заклинания */
+.weapon,.spell-card,.feature-card{margin:12px 0 0;padding:16px;background:var(--surface2);border:1px solid var(--line);border-radius:14px}
+.weapon-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.weapon-top input,.weapon-top rt-box{flex:1;min-width:0;font:500 17px/1.3 var(--serif)}
+.weapon-top .pill{flex:none;max-width:45%;overflow:hidden;text-overflow:ellipsis}
+.weapon-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px;align-items:end}
+.weapon-grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.weapon-grid .value{padding:9px 0}
+.die-cell{grid-column:span 2}
+
+.weapon-opts{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:14px}
+.special-cell{margin:14px 0 0}
+.dmg-break{margin-top:16px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.18)}
+.dmg-parts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.part{display:flex;flex-direction:column;gap:2px;min-width:72px;padding:6px 12px;border:1px solid var(--line);border-radius:10px}
+.part .pl{font-size:11px;color:var(--muted)}
+.part .pv{font:600 17px var(--serif);color:var(--text);white-space:nowrap}
+.part.total{margin-left:auto;border-color:var(--gold-dim);background:var(--gold-bg)}
+.part.total .pv{color:var(--gold);font-size:20px}
+.die-ctl{display:flex;align-items:center;gap:8px}
+.die-ctl input[type=number]{width:72px;flex:none;text-align:center}
+.die-ctl select{flex:1;min-width:84px}
+.die-ctl .die-custom{width:84px}
+.die-sep{color:var(--gold);font:600 17px var(--serif)}
+.card-foot{margin-top:14px;text-align:right}
+.feature-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.feature-top input,.feature-top rt-box{font:500 16px/1.3 var(--serif)}
+.spell-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.spell-grid .field:first-child{grid-column:span 2}
+.spell-card .row{margin-top:4px}
+.spell-card rt-box[data-k="description"]{margin-top:2px}
+/* Форматируемый текст: блок выглядит как обычное поле, но принимает цвет, шрифт, размер и т.д. */
+rt-box{display:block;width:100%;min-width:0;padding:10px 12px;color:var(--text);background:var(--field);border:1px solid var(--line);border-radius:10px;font:inherit;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;cursor:text;outline:none;transition:border-color .15s,box-shadow .15s;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+rt-box:focus{border-color:var(--gold-dim);box-shadow:0 0 0 3px rgba(212,179,122,.12)}
+rt-box:empty::before{content:attr(data-ph);color:#686b70;pointer-events:none}
+rt-box[data-single]{line-height:1.3}
+.rich{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#sheetTitle,#sheetSubtitle{overflow-wrap:anywhere}
+#sheetTitle{font-weight:700}   /* заголовок листа сразу жирный */
+/* Панель форматирования */
+html{scroll-padding-bottom:76px}
+body.rt-open{padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+#rtBar{position:fixed;left:0;right:0;bottom:0;z-index:1500;display:flex;align-items:center;gap:4px;padding:7px 8px calc(7px + env(safe-area-inset-bottom,0px));overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;background:var(--surface);border-top:1px solid var(--line-strong);box-shadow:0 -8px 26px rgba(0,0,0,.5)}
+#rtBar::-webkit-scrollbar{display:none}
+#rtBar .sep{flex:none;width:1px;height:24px;margin:0 4px;background:var(--line-strong)}
+#rtBar button{flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:38px;padding:0 8px;border-radius:9px;font:600 15px var(--sans);user-select:none;-webkit-user-select:none;touch-action:manipulation}
+#rtBar button.wide{padding:0 12px;font-weight:500;font-size:14px}
+#rtBar button.on{color:var(--gold);border-color:var(--gold);background:var(--gold-bg)}
+#rtBar .ico-a{padding:0 2px 1px;border-bottom:3px solid var(--rt-fore,var(--gold));line-height:1.1}
+#rtBar .ico-m{padding:1px 5px;border-radius:4px;background:var(--rt-back,rgba(255,235,59,.4));line-height:1.2}
+#rtPop{position:fixed;left:8px;z-index:1501;max-width:calc(100vw - 16px);max-height:min(60vh,420px);overflow:auto;padding:8px;background:var(--surface2);border:1px solid var(--line-strong);border-radius:14px;box-shadow:0 12px 34px rgba(0,0,0,.6)}
+#rtPop .opt{display:block;width:100%;margin-top:4px;padding:9px 12px;text-align:left;font:500 15px var(--sans);border-radius:9px}
+#rtPop .opt:first-child{margin-top:0}
+#rtPop .grid{display:grid;gap:6px}
+#rtPop .grid.sw{grid-template-columns:repeat(6,34px)}
+#rtPop .grid.sizes{grid-template-columns:repeat(4,56px)}
+#rtPop .grid .opt{margin:0;text-align:center;padding:8px 0}
+#rtPop .swatch{width:34px;height:34px;padding:0;border-radius:8px;border:1px solid var(--line-strong)}
+#rtPop label.custom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;border:1px solid var(--line-strong);cursor:pointer}
+#rtPop label.custom input{width:44px;height:28px;padding:0;border:0;background:transparent;cursor:pointer}
+.badge{display:inline-block;margin-left:8px;padding:1px 9px;font:500 11px var(--sans);color:var(--gold);border:1px solid var(--line-strong);border-radius:999px;vertical-align:middle}
+
+/* Ячейки заклинаний */
+.slot-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.slot{padding:12px 14px;background:var(--surface2);border:1px solid var(--line);border-radius:14px}
+.slot-title{margin-bottom:8px;font:600 15px var(--serif);color:var(--gold)}
+.slot-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.slot-inputs label{display:block;margin-bottom:3px;font-size:11px;color:var(--muted)}
+.slot-inputs input{padding:8px 10px}
+
+/* Инвентарь, монеты, изображение */
+.inventory-list{display:grid;gap:6px}
+.inv-item{padding:6px;background:var(--surface2);border:1px solid var(--line);border-radius:12px}
+.inv-main{display:grid;grid-template-columns:minmax(0,1fr) 54px auto auto;gap:6px;align-items:center}
+.inv-main input,.inv-main rt-box{padding:8px 10px;line-height:1.3}
+.inv-main button{width:34px;height:34px;padding:0;font-size:15px;line-height:1;border-radius:8px}
+.inv-main input.inv-qty{text-align:center;padding:8px 4px}
+.inv-note{color:var(--muted)}
+.weapon-desc{margin-top:14px}
+.weapon-desc rt-box{margin-top:4px}
+.inv-note.has,.inv-item.open .inv-note{color:var(--gold);border-color:var(--gold-dim)}
+.inv-body{display:none;margin-top:6px}
+.inv-item.open>.inv-body{display:block}
+.inv-body>rt-box{display:block}
+.inv-prev{display:none;margin:5px 4px 1px;font-size:12px;color:var(--muted)}   /* только для печати */
+.inv-inside{display:grid;gap:6px;margin-top:6px;padding:8px;background:var(--field);border:1px solid var(--line);border-left:3px solid var(--gold-dim);border-radius:10px}
+.inv-inside-label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.inv-item.dragging{opacity:.35}
+.inv-item.drop-target{border-color:var(--gold);box-shadow:0 0 0 2px rgba(212,179,122,.35)}
+.inventory-list.drop-root{outline:2px dashed var(--gold-dim);outline-offset:4px;border-radius:12px}
+.inv-ghost{position:fixed;left:0;top:0;z-index:3000;pointer-events:none;max-width:70vw;padding:8px 12px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--text);background:var(--surface2);border:1px solid var(--gold);border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.55)}
+body.inv-dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
+.inv-item{-webkit-touch-callout:none}
+@media(pointer:coarse){.inv-main button{width:40px;height:40px}}
+.coin-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.hero-img{display:block;width:100%;max-height:650px;margin:12px 0 16px;object-fit:contain;background:#0a0c10;border:1px solid var(--line-strong);border-radius:14px}
+.image-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.image-tools input[type=file]{flex:1;min-width:200px}
+
+/* Окна, предупреждение, формулы */
+.vh{position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0}
+.modal{position:fixed;top:0;right:0;bottom:0;left:0;z-index:2000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(5,6,9,.82)}
+.modal-card{width:100%;max-width:420px;padding:22px;background:var(--surface);border:1px solid var(--line-strong);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+.modal-card h3{margin:0 0 8px;font-size:19px;color:var(--gold)}
+.modal-card p{margin:0 0 14px}
+.modal-card .row.actions{justify-content:flex-end;margin-top:16px}
+.storage-warn{padding:12px 0;font-size:13px;color:#f0d9a8;background:rgba(207,122,115,.14);border-bottom:1px solid var(--red-line)}
+.rich{width:100%;padding:10px 12px;color:var(--text);background:var(--field);border:1px solid var(--line);border-radius:10px;font-family:inherit;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;cursor:text;transition:border-color .15s}
+.rich:hover{border-color:var(--line-strong)}
+.rich .dice{color:var(--red);font-weight:700;white-space:nowrap}
+.rich .num{color:var(--gold);font-weight:600}
+.rich:focus{outline:none;border-color:var(--gold-dim)}
+rt-box.rich-on{display:none}
+.chip{display:inline-block;margin:0 1px 0 6px;padding:0 8px;font:600 .82em/1.55 var(--sans);color:var(--gold);white-space:nowrap;background:var(--gold-bg);border:1px solid var(--line-strong);border-radius:999px}
+details.help{margin-top:14px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.14)}
+details.help summary{cursor:pointer;color:var(--gold);font-family:var(--serif)}
+details.help p,details.help li{font-size:13px;color:var(--muted)}
+details.help ul{padding-left:20px}
+details.help code{padding:1px 6px;font-size:12px;color:var(--gold);background:var(--gold-bg);border-radius:6px}
+
+/* Вложения */
+.attach{margin-top:14px}
+.thumbs{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:12px}
+.thumb{position:relative;margin:0;overflow:hidden;background:#0a0c10;border:1px solid var(--line-strong);border-radius:12px}
+.thumb img{display:block;width:100%;height:auto;cursor:zoom-in}
+.thumb-del{position:absolute;top:5px;right:5px;width:26px;height:26px;padding:0;font-size:16px;line-height:1;color:var(--red);background:rgba(10,12,16,.85);border-color:var(--red-line);border-radius:50%}
+.attach-add{padding:6px 12px;font-size:12px;color:var(--muted);border-style:dashed}
+.attach-add:hover{color:var(--text)}
+#lightbox{position:fixed;top:0;right:0;bottom:0;left:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,6,9,.94);cursor:zoom-out}
+#lightbox.open{display:flex}
+#lightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}
+
+/* Вкладки */
+.tabs{display:flex;flex-wrap:nowrap;gap:8px;margin:0 0 20px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.tab-btn{flex:1 1 0;min-width:0;padding:10px 12px;color:var(--muted);background:transparent;border:1px solid var(--line-strong);border-radius:10px;font:500 15px var(--serif);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tab-btn:hover{color:var(--text);background:var(--gold-bg);border-color:var(--gold-dim)}
+.tab-btn.active{color:var(--gold);background:rgba(212,179,122,.15);border-color:var(--gold);font-weight:700;box-shadow:inset 0 -3px 0 var(--gold)}
+.tab-pane{display:none}.tab-pane.active{display:block}
+
+/* Менеджер персонажей */
+.character-manager{position:sticky;top:0;z-index:50;padding:10px 0;background:rgba(10,12,16,.94);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.character-manager .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+.manager-label{font:500 14px var(--serif);color:var(--gold-dim)}
+.character-menu{position:relative;flex:1 1 240px;max-width:420px;min-width:190px}
+.character-menu-toggle{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;background:var(--surface2);border-color:var(--gold-dim);font-weight:600}
+.character-menu-toggle .label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.character-menu-toggle .arrow{color:var(--gold);font-size:12px;transition:transform .15s}
+.character-menu.open .arrow{transform:rotate(180deg)}
+.character-picker{display:none;position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:100;max-height:55vh;padding:6px;overflow-y:auto;background:var(--surface);border:1px solid var(--line-strong);border-radius:12px;box-shadow:0 18px 40px rgba(0,0,0,.6)}
+.character-menu.open .character-picker{display:grid;gap:3px}
+.character-choice{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;border-color:transparent}
+.character-choice[aria-checked=true]{background:var(--gold-bg);border-color:var(--line-strong)}
+.choice-text{display:flex;flex-direction:column;align-items:flex-start;min-width:0;gap:1px}
+.choice-name{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.choice-cls{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--muted)}
+.choice-hint{font-size:11px;color:var(--muted);white-space:nowrap}
+.manager-actions{display:flex;flex-wrap:wrap;gap:8px}
+.manager-actions button{padding:9px 13px;font-size:13px}
+
+/* QoL: сворачивание окон и акценты */
+.fold-head{cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.fold-head:hover{color:#e8d3a6}
+.fold-arrow{margin-left:auto;padding:0 4px;color:var(--gold);font-size:15px;transition:transform .15s}
+.panel.collapsed>.fold-head .fold-arrow{transform:rotate(-90deg)}
+.panel.collapsed>:not(h2){display:none!important}
+.panel.collapsed>h2{margin-bottom:0}
+.panel.collapsed{padding-top:15px;padding-bottom:15px;background:var(--surface2)}
+.fold-tools{display:flex;justify-content:flex-end;gap:8px;margin:-8px 0 14px}
+.fold-tools button{padding:5px 12px;font-size:12px;color:var(--muted)}
+.fold-btn{flex:none;width:30px;height:30px;padding:0;color:var(--gold);font-size:14px;line-height:1;border-radius:8px;transition:transform .15s}
+.fold-btn[aria-expanded=false]{transform:rotate(-90deg)}
+@media(pointer:coarse){.fold-btn{width:36px;height:36px}}
+.weapon.folded>:not(.weapon-top),.spell-card.folded>:not(.card-head){display:none!important}
+.card-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.spell-card.folded .card-head{margin-bottom:0}
+.card-title{flex:1;min-width:0;font:600 17px var(--serif);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.spell-card:has([data-k=prepared]:checked){border-left:3px solid var(--gold)}
+.spell-card:has([data-k=prepared]:checked) .card-title::after{content:" ✦";color:var(--gold);font-size:13px}
+#hpNow,#hpMax,#hpTemp,#ac{font:600 18px var(--serif)}
+#hpTemp{color:var(--temp);border-color:var(--temp)}
+#hpNow.hp-ok{color:var(--ok);border-color:rgba(143,191,138,.5)}
+#hpNow.hp-mid{color:var(--warn);border-color:rgba(224,168,92,.6)}
+#hpNow.hp-low{color:var(--red);border-color:var(--red);background:var(--red-bg)}
+#ac{color:var(--gold);border-color:var(--gold-dim)}
+.mod.neg{color:var(--red);border-color:var(--red-line)}
+#saves .value,#skills .value{color:var(--muted);font-weight:500}
+#saves .item:has(input:checked) .value,#skills .item:has([data-kind=prof]:checked) .value{color:var(--gold);font-weight:700}
+#saves .item:has(input:checked) .checkline,#skills .item:has([data-kind=prof]:checked) .checkline:not(.sub){color:var(--gold)}
+#skills .item:has([data-kind=exp]:checked) .value::after{content:" ★";font-size:12px}
+.slot-off{opacity:.5}
+.slot:not(.slot-off):not(.slot-empty){border-color:var(--line-strong)}
+.slot-empty{border-color:var(--red-line);background:var(--red-bg)}
+.slot-empty .slot-title{color:var(--red)}
+.weapon-top .pill{color:var(--gold);border-color:var(--gold-dim)}
+@media(max-width:860px){
+  .weapon-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .die-cell{grid-column:1/-1}
+  .weapon-grid.three,.spell-grid,.slot-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .weapon-grid.three>:last-child{grid-column:1/-1}
+}
+@media(max-width:760px){
+  .span-6{grid-column:span 12}
+  .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .two{grid-template-columns:1fr}
+  .coin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .wrap{padding:0 14px}.panel{padding:16px}
+  main.wrap{padding-top:26px}
+  .fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:600px){
+  .character-manager{position:relative}.character-manager .wrap{align-items:stretch}
+  .manager-label{display:none}
+  .character-menu{flex-basis:100%;max-width:none}
+  .manager-actions{width:100%}.manager-actions button{flex:1}
+  .tab-btn{padding:10px 6px;font-size:14px}
+  .spell-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:340px){.tab-btn{padding:10px 4px;font-size:12.5px}}
+@media(max-width:380px){.spell-grid,.slot-grid{grid-template-columns:1fr}.spell-grid .field:first-child{grid-column:auto}}
+
+/* Саммоны и спутники */
+.summon-card{margin:12px 0 0;padding:16px;background:var(--surface2);border:1px solid var(--line);border-radius:14px}
+.summon-top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.summon-top rt-box{flex:1;min-width:0;font:500 17px/1.3 var(--serif)}
+.summon-card.folded .summon-top{margin-bottom:0}
+.summon-card.folded>:not(.summon-top){display:none!important}
+.summon-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:end}
+.summon-grid .wide{grid-column:1/-1}
+.s-stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:14px 0}
+.s-stat{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.s-stat label{font-size:11px;letter-spacing:.04em;color:var(--muted)}
+.s-stat input{width:100%;padding:0;font:600 20px/1.1 var(--serif);text-align:center;color:var(--text);background:transparent;border:0;border-radius:6px;-moz-appearance:textfield;appearance:textfield}
+.s-stat input::-webkit-inner-spin-button,.s-stat input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.s-stat input:focus{box-shadow:none;background:var(--gold-bg)}
+.s-stat .mod{min-width:0;padding:0 8px;font-size:12px}
+@media(max-width:860px){.summon-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.s-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+.theme-btn{flex:none;align-self:flex-start;padding:3px 10px;font-size:12px;line-height:1.5;border-radius:999px;white-space:nowrap}
+
+/* Светлая тема (только на экране — печать остаётся как была) */
+@media screen{
+:root[data-theme="light"]{color-scheme:light;--bg:#f5f0e4;--surface:#fffdf8;--surface2:#f4eddd;--field:#fffefb;--line:rgba(110,80,30,.2);--line-strong:rgba(110,80,30,.4);--text:#2a2417;--muted:#6a634f;--gold:#7a5818;--gold-dim:#9c7d3f;--gold-bg:rgba(122,88,24,.09);--red:#b0443d;--red-bg:rgba(176,68,61,.09);--red-line:rgba(176,68,61,.45);--ok:#3d7a37;--warn:#a8620f;--temp:#2b6a9c}
+html[data-theme="light"] body{background:radial-gradient(900px 380px at 50% -140px,rgba(122,88,24,.08),transparent 70%),var(--bg)}
+html[data-theme="light"] h3{color:#5a4520}
+html[data-theme="light"] .fold-head:hover{color:#4a3510}
+html[data-theme="light"] select option{background:#fff}
+html[data-theme="light"] select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%237a5818' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+html[data-theme="light"] button.primary{color:#fff}
+html[data-theme="light"] button.primary:hover{background:#8f6a22}
+html[data-theme="light"] .tab-btn.active{background:rgba(122,88,24,.12)}
+html[data-theme="light"] .character-manager{background:rgba(245,240,228,.94)}
+html[data-theme="light"] .hero-img,html[data-theme="light"] .thumb{background:#ece4d2}
+html[data-theme="light"] .storage-warn{color:#6b3a12}
+html[data-theme="light"] .dmg-break,html[data-theme="light"] details.help{background:rgba(0,0,0,.035)}
+html[data-theme="light"] #rtBar{box-shadow:0 -6px 20px rgba(60,40,10,.15)}
+html[data-theme="light"] #rtPop,html[data-theme="light"] .character-picker,html[data-theme="light"] .modal-card,html[data-theme="light"] .inv-ghost{box-shadow:0 10px 28px rgba(60,40,10,.2)}
+html[data-theme="light"] .modal{background:rgba(40,30,15,.55)}
+}
+@media print{
+  :root{--bg:#fff;--surface:#fff;--surface2:#fff;--field:#fff;--line:#bbb;--line-strong:#999;--text:#111;--muted:#444;--gold:#65491b;--gold-dim:#65491b}
+  body,html{background:#fff;color:#111}
+  .modal,.storage-warn,details.help,.character-manager,.tabs,.fold-tools,.fold-arrow,button,.image-tools,.card-foot,.hint{display:none}
+  .thumb{break-inside:avoid}
+  .tab-pane{display:block!important}
+  .hero-img{max-height:420px}
+  .inv-item{break-inside:avoid}
+  .inv-body{display:block!important}
+  .inv-body>rt-box{display:none!important}
+  #rtBar,#rtPop{display:none!important}
+  .inv-item .inv-prev{display:block!important;white-space:pre-wrap;overflow:visible}
+  .inv-prev:empty{display:none!important}
+  .inv-inside{background:#fff}
+}
+</style>
+</head>
+<body>
+<header><div class="wrap brand">
+  <div class="brand-text">
+    <h1 id="sheetTitle" contenteditable="true" spellcheck="false" aria-label="Редактируемый заголовок">Новый персонаж</h1>
+    <p id="sheetSubtitle" contenteditable="true" spellcheck="false" aria-label="Редактируемый подзаголовок">Интерактивный лист персонажа Dungeons &amp; Dragons</p>
+  </div>
+  <button type="button" id="themeToggle" class="theme-btn" data-act="toggle-theme" aria-pressed="false" title="Сменить тему">☀ Светлая</button>
+</div></header>
+
+<div id="storageWarn" class="storage-warn" hidden><div class="wrap"><strong>Браузер не разрешает сохранять данные.</strong> Так бывает на iPhone, если файл открыт из «Файлов», почты или в приватной вкладке. Пока страница открыта, всё работает, но после закрытия данные пропадут. Нажми «Скачать резервную копию» — файл можно потом загрузить обратно. Постоянное сохранение работает, если открыть лист по обычной ссылке (например, с GitHub Pages). <button type="button" data-act="export" style="margin-top:8px">Скачать резервную копию</button></div></div>
+<nav class="character-manager" aria-label="Управление персонажами"><div class="wrap">
+  <span class="manager-label" id="managerLabel">Персонаж</span>
+  <div id="characterMenu" class="character-menu">
+    <button id="characterMenuSummary" class="character-menu-toggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="characterPicker" aria-labelledby="managerLabel characterMenuSummary"><span class="label">Выбрать лист персонажа</span><span class="arrow" aria-hidden="true">▾</span></button>
+    <div id="characterPicker" class="character-picker" role="menu" aria-label="Список листов персонажей"></div>
+  </div>
+  <div class="manager-actions">
+    <button class="primary" type="button" data-act="new-char">+ Новый лист</button>
+    <button class="danger" type="button" data-act="delete-char">Удалить лист</button>
+  </div>
+</div></nav>
+
+<main class="wrap"><div class="tab-group" id="mainTabs">
+<div class="tabs" role="tablist"><button class="tab-btn active" type="button" data-tab="characterPane">Лист персонажа</button><button class="tab-btn" type="button" data-tab="spellsPane">Заклинания и заговоры</button></div>
+<div class="fold-tools"><button type="button" data-act="fold-all">Свернуть все окна</button><button type="button" data-act="unfold-all">Развернуть все</button></div>
+
+<div id="characterPane" class="tab-pane active"><div class="grid">
+<section class="panel span-12" data-az="static:info">
+<div class="fields">
+<div class="field"><label for="name">Имя персонажа</label><rt-box id="name" data-single data-ph="Имя персонажа" contenteditable="true"></rt-box></div>
+<div class="field"><label for="className">Класс</label><rt-box id="className" data-single data-ph="Класс" contenteditable="true"></rt-box></div>
+<div class="field"><label for="race">Раса</label><rt-box id="race" data-single data-ph="Раса персонажа" contenteditable="true"></rt-box></div>
+<div class="field"><label for="alignment">Мировоззрение</label><rt-box id="alignment" data-single data-ph="Например: Хаотично-добрый" contenteditable="true"></rt-box></div>
+<div class="field"><label for="level">Уровень</label><input type="number" id="level" min="1" max="20" value="1"></div>
+<div class="field"><label for="prof">Бонус мастерства</label><input type="number" id="prof" min="0" max="20" value="2"></div>
+<div class="field"><label for="initiativeBonus">Бонус инициативы</label><input id="initiativeBonus" type="number" value="0"></div>
+<div class="field"><label for="passive">Пассивная внимательность</label><input id="passive" readonly value="10"></div>
+</div>
+<div class="fields">
+<div class="field"><label for="hpNow">Текущие хиты</label><input type="number" id="hpNow" min="0" value="0"></div>
+<div class="field"><label for="hpMax">Максимум хитов</label><input type="number" id="hpMax" min="0" value="0"></div>
+<div class="field"><label for="hpTemp">Временные хиты</label><input type="number" id="hpTemp" min="0" value="0"></div>
+<div class="field"><label for="ac">Класс доспеха (КД)</label><input type="number" id="ac" min="0" value="10"></div>
+<div class="field"><label for="speed">Скорость, футы</label><input type="number" id="speed" min="0" value="30"></div>
+<div class="field"><label for="age">Возраст</label><input type="number" id="age" placeholder="Возраст"></div>
+</div>
+</section>
+
+<section class="panel span-12" data-az="static:stats"><h2>Характеристики</h2><div class="stats" id="stats"></div></section>
+<section class="panel span-6" data-az="static:saves"><h2>Спасброски</h2><div class="list" id="saves"></div></section>
+<section class="panel span-6" data-az="static:skills"><h2>Навыки</h2><div class="list" id="skills"></div></section>
+<section class="panel span-12" data-az="static:traits"><h2>Черты</h2><div id="characterTraits"></div><div class="row actions"><button class="primary" type="button" data-act="add-trait">+ Добавить черту</button></div></section>
+<section class="panel span-12" data-az="static:features"><h2>Особенности и умения</h2><div id="characterFeatures"></div><div class="row actions"><button class="primary" type="button" data-act="add-feature">+ Добавить особенность или умение</button></div></section>
+<section class="panel span-12" data-az="static:prof"><h2>Владения и языки</h2><div class="two">
+<div><h3>Владения</h3><rt-box id="proficienciesText" data-rows="4" data-ph="Оружие, доспехи, инструменты и другие владения" contenteditable="true"></rt-box></div>
+<div><h3>Языки</h3><rt-box id="languagesText" data-rows="4" data-ph="Языки персонажа" contenteditable="true"></rt-box></div></div></section>
+<section class="panel span-12" data-az="static:weapons"><h2>Оружие</h2><div id="weapons"></div><div class="row actions"><button class="primary" type="button" data-act="add-weapon">+ Добавить оружие</button></div></section>
+<section class="panel span-12" data-az="static:inventory"><h2>Инвентарь</h2><div class="section-note">Нажми ✎ — описание и содержимое предмета. Зажми и перетащи предмет, чтобы положить его в другой.</div>
+<div class="panel" style="margin-bottom:12px"><h3>Монеты</h3><div class="coin-grid">
+<div class="field"><label for="coinsPlatinum">Платиновые монеты (пм)</label><input id="coinsPlatinum" type="number" min="0" value="0"></div>
+<div class="field"><label for="coinsGold">Золотые монеты (зм)</label><input id="coinsGold" type="number" min="0" value="0"></div>
+<div class="field"><label for="coinsSilver">Серебряные монеты (см)</label><input id="coinsSilver" type="number" min="0" value="0"></div>
+<div class="field"><label for="coinsCopper">Медные монеты (мм)</label><input id="coinsCopper" type="number" min="0" value="0"></div></div></div>
+<div id="inventoryList" class="inventory-list"></div><div class="row actions"><button class="primary" type="button" data-act="add-item">+ Добавить предмет</button></div></section>
+<section class="panel span-12" data-az="static:summons"><h2>Саммоны и спутники</h2><div id="summons"></div><div class="row actions"><button class="primary" type="button" data-act="add-summon">+ Добавить саммона</button></div></section>
+
+<section class="panel span-12 tab-group" id="descriptionTabs"><h2>История и описание персонажа</h2>
+<div class="tabs" role="tablist"><button class="tab-btn active" type="button" data-tab="historyPane">Полная предыстория</button><button class="tab-btn" type="button" data-tab="appearancePane">Внешность</button></div>
+<div id="historyPane" class="tab-pane active" data-az="static:history"><label class="small-label" for="historyText">Предыстория персонажа — можно редактировать</label><rt-box id="historyText" data-rows="18" contenteditable="true"></rt-box></div>
+<div id="appearancePane" class="tab-pane" data-az="static:appearance">
+<div class="image-tools"><label class="small-label" for="characterImage" style="width:100%;margin:0">Изображение персонажа (необязательно)</label><input id="characterImage" type="file" accept="image/*"><button type="button" class="danger" id="removeImage" data-act="remove-image" style="display:none">Убрать изображение</button></div>
+<img id="characterPreview" class="hero-img" alt="Изображение персонажа" style="display:none">
+<label class="small-label" for="appearanceText">Внешность персонажа — можно редактировать</label><rt-box id="appearanceText" data-rows="14" contenteditable="true"></rt-box></div>
+</section>
+
+<section class="panel span-12" data-az="static:notes"><h2>Краткие заметки о персонаже</h2><rt-box id="notes" data-rows="5" contenteditable="true"></rt-box></section>
+<section class="panel span-12"><h2>Сохранение</h2>
+<div class="row actions" style="margin-top:0"><button class="primary" type="button" data-act="save">Сохранить изменения</button><button type="button" data-act="export">Скачать резервную копию</button><button type="button" data-act="import">Загрузить из копии</button><button type="button" data-act="print">Печать / PDF</button><button class="danger" type="button" data-act="reset">Сбросить лист</button></div>
+<div id="saveStatus" class="footer-note" role="status" aria-live="polite">Сохраняется автоматически.</div>
+<details class="help"><summary>Значения в тексте и формулы — как пользоваться</summary>
+<p><b>Форматирование текста.</b> Нажми на любое текстовое поле — внизу экрана появится панель: <b>Ж</b> жирный, <i>К</i> наклон, <u>Ч</u> подчёркивание, <s>З</s> зачёркивание, шрифт, размер, цвет текста, цветное выделение, выравнивание, верхний и нижний индекс, «Сброс» и отмена/повтор. Выдели слова и нажми нужную кнопку; без выделения форматирование применится к тому, что напечатаешь дальше. Горячие клавиши: Ctrl+B, Ctrl+I, Ctrl+U, Ctrl+Z.</p>
+<p><b>Значения прямо в тексте.</b> В любом большом текстовом поле (заметки, описания, история и т.д.) напиши «мод силы», «модификатор ловкости» (так же телосложения, интеллекта, мудрости, харизмы), «бонус мастерства», «мод заклинаний», «бонус атаки заклинанием» или «пассивная внимательность» — рядом со словами появится рамка с текущим значением. Она меняется вместе с листом. Чтобы поправить текст, просто нажми на него — рамки видны, когда поле не редактируется.</p>
+<p><b>Особый урон оружия</b> тоже понимает формулы, например <code>мод ловкости</code>, <code>бонус мастерства * 2</code> или <code>+1к6 огнём</code>.</p>
+<ul>
+<li><b>Действия:</b> <code>+ − * /</code> и скобки. Кости складываются (<code>2к6 + 1к4</code>), деление округляется вниз. Слова, которые не являются формулой, остаются пояснением.</li>
+<li><b>Что можно использовать:</b> мод силы / ловкости / телосложения / интеллекта / мудрости / харизмы (можно коротко: <code>мод сил</code>, <code>мод лов</code>), значения характеристик (<code>сила</code>, <code>ловкость</code>…), <code>бонус мастерства</code>, <code>уровень</code>, <code>кд</code>, <code>скорость</code>, <code>макс хиты</code>, <code>текущие хиты</code>, <code>инициатива</code>, <code>пассивная внимательность</code>, <code>мод заклинаний</code>, <code>бонус атаки заклинанием</code>.</li>
+</ul></details>
+<details class="help"><summary>Оформление текста — как пользоваться</summary>
+<p>Нажми на любой текст (названия, описания, заметки, заголовок листа) — внизу экрана появится панель: <b>Ж</b> жирный, <i>К</i> наклонный, <u>Ч</u> подчёркнутый, <s>З</s> зачёркнутый, шрифт, размер, цвет текста, выделение цветом (маркер), выравнивание, верхний и нижний индекс, «Сброс» и отмена действия.</p>
+<p>Выдели нужные слова и нажми кнопку. Если ничего не выделено, оформление применится к тому, что ты напечатаешь дальше. Горячие клавиши: Ctrl+B, Ctrl+I, Ctrl+U. Вставка из других программ идёт обычным текстом, а текст, скопированный из этого же листа, сохраняет оформление.</p></details>
+<details class="help"><summary>Если данные не сохраняются (iPhone / iPad)</summary>
+<p>Safari не всегда даёт постоянную память файлам, открытым из «Файлов», почты или мессенджера. Что делать: скачай «резервную копию» (файл .json попадёт в «Файлы») и загружай её кнопкой «Загрузить из копии» после повторного открытия. Надёжнее всего открывать лист по обычной ссылке — например, выложить файл на GitHub Pages и добавить страницу на экран «Домой».</p></details>
+</section>
+</div></div>
+
+<div id="spellsPane" class="tab-pane"><div class="grid">
+<section class="panel span-12" data-az="static:magic"><h2>Магия персонажа</h2><div class="fields" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+<div class="field"><label for="spellAbility">Основная характеристика заклинаний</label><select id="spellAbility"><option value="int">Интеллект</option><option value="wis">Мудрость</option><option value="cha">Харизма</option></select></div>
+<div class="field"><label for="spellAttack">Бонус атаки заклинанием</label><input id="spellAttack" readonly value="+2"></div>
+</div></section>
+<section class="panel span-12" data-az="static:slots"><h2>Ячейки заклинаний</h2><div class="slot-grid" id="spellSlots"></div></section>
+<section class="panel span-12" data-az="static:cantrips"><h2>Заговоры</h2><div id="cantripsList"></div><div class="row actions"><button class="primary" type="button" data-act="add-cantrip">+ Добавить заговор</button></div></section>
+<section class="panel span-12" data-az="static:spells"><h2>Заклинания</h2><div id="spellsList"></div><div class="row actions"><button class="primary" type="button" data-act="add-spell">+ Добавить заклинание</button></div></section>
+<section class="panel span-12" data-az="static:spellnotes"><h2>Заметки о магии</h2><rt-box id="spellNotes" data-rows="5" data-ph="Источник магии, фокусировка, особенности и другие заметки" contenteditable="true"></rt-box></section>
+</div></div>
+</div></main>
+
+<div id="modal" class="modal" hidden><div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><h3 id="modalTitle"></h3><p id="modalText" class="muted"></p><input id="modalInput" autocomplete="off" hidden><div class="row actions"><button type="button" id="modalCancel">Отмена</button><button type="button" id="modalOk" class="primary">ОК</button></div></div></div>
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Просмотр изображения"><img alt=""></div>
+<script>
+'use strict';
+/* ============================================================
+   Данные и константы
+   ============================================================ */
+const ABILITIES=[['str','Сила'],['dex','Ловкость'],['con','Телосложение'],['int','Интеллект'],['wis','Мудрость'],['cha','Харизма']];
+const SKILLS=[['Акробатика','dex'],['Анализ','int'],['Атлетика','str'],['Внимательность','wis'],['Выживание','wis'],['Выступление','cha'],['Запугивание','cha'],['История','int'],['Ловкость рук','dex'],['Магия','int'],['Медицина','wis'],['Обман','cha'],['Природа','int'],['Проницательность','wis'],['Религия','int'],['Скрытность','dex'],['Убеждение','cha'],['Уход за животными','wis']];
+const PERCEPTION=SKILLS.findIndex(s=>s[0]==='Внимательность');
+const DEFAULT_TITLE='Новый персонаж', DEFAULT_SUBTITLE='Лист персонажа';
+
+// Ключи хранилища. STORE_KEY и OLD_PREFIX совпадают со старой версией — старые данные подхватываются.
+const STORE_KEY='dndCharacterCollectionV2';
+const STATE_PREFIX='dndSheetRecord_V7_';
+const OLD_PREFIX='dndSheetRecord_V6_';
+const LEGACY_KEY='dndCharacterSheetAutosave';
+
+const $=id=>document.getElementById(id);
+const focusEl=el=>{if(el&&typeof el.focus==='function')el.focus()};
+const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
+const num=id=>Number($(id).value)||0;
+const abil=id=>{const v=$(id).value;return v===''?10:Number(v)||0};
+const mod=v=>Math.floor((v-10)/2);
+const fmt=n=>n>=0?'+'+n:String(n);
+const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* Безопасная работа с localStorage (может быть недоступен или переполнен) */
+const storageOk=(()=>{try{const k='__dnd_probe__';localStorage.setItem(k,'1');localStorage.removeItem(k);return true}catch(e){return false}})();
+const mem={};   // запасная память страницы, если браузер не даёт localStorage (часто на iPhone с файлами)
+const store={
+  get(k){if(!storageOk)return Object.prototype.hasOwnProperty.call(mem,k)?mem[k]:null;try{return localStorage.getItem(k)}catch(e){return null}},
+  set(k,v){if(!storageOk){mem[k]=v;return true}try{localStorage.setItem(k,v);return true}catch(e){return false}},
+  del(k){if(!storageOk){delete mem[k];return}try{localStorage.removeItem(k)}catch(e){}},
+  json(k){try{return JSON.parse(store.get(k)||'null')}catch(e){return null}}
+};
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+
+/* Тема оформления: тёмная (по умолчанию) или светлая */
+const THEME_KEY='dndThemeV1';
+function applyTheme(t){
+  const light=t==='light';
+  document.documentElement.setAttribute('data-theme',light?'light':'dark');
+  const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=light?'#f5f0e4':'#0b0e13';
+  const c=document.querySelector('meta[name="color-scheme"]');if(c)c.content=light?'light':'dark';
+  const b=$('themeToggle');if(b){b.textContent=light?'☾ Тёмная':'☀ Светлая';b.setAttribute('aria-pressed',String(light))}
+}
+function toggleTheme(){
+  const next=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';
+  store.set(THEME_KEY,next);applyTheme(next);
+}
+applyTheme(store.get(THEME_KEY)==='light'?'light':'dark');
+
+/* ============================================================
+   Форматируемый текст. Вместо textarea / input везде стоит <rt-box> — редактируемый блок.
+   Простой текст хранится как обычная строка (старые данные подхватываются без изменений);
+   если в тексте есть форматирование, строка начинается с метки <!--h--> и дальше идёт безопасная разметка.
+   ============================================================ */
+const RT_MARK='<!--h-->';
+const RT_PX=[0,10,13,16,18,24,32,48];
+const RT_KW={'xx-small':10,'x-small':12,'small':13,'medium':16,'large':18,'x-large':24,'xx-large':32,'xxx-large':48};
+const RT_COLOR=/^(?:#[0-9a-f]{3,8}|(?:rgb|hsl)a?\([0-9.,%\s\/a-z]+\)|[a-z]{3,30}|var\(--text\))$/i;
+const RT_FAMILY=/^[\p{L}\p{N}\s,'"\-]{1,200}$/u;
+const RT_ALIGN=/^(?:left|right|center|justify)$/;
+const RT_DROP=/^(?:SCRIPT|STYLE|TEMPLATE|IFRAME|OBJECT|EMBED|SVG|IMG|VIDEO|AUDIO|CANVAS|INPUT|BUTTON|SELECT|TEXTAREA|HEAD|META|LINK|NOSCRIPT|FORM)$/;
+const RT_BLOCK=/^(?:DIV|P|LI|UL|OL|H[1-6]|BLOCKQUOTE|PRE|TABLE|TR|SECTION|ARTICLE|HEADER|FOOTER)$/;
+const rtIsBr=n=>!!n&&n.nodeType===1&&n.nodeName==='BR';
+const rtBr=()=>document.createElement('br');
+
+/* Допустимые стили элемента → строка CSS */
+function rtCssOf(n){
+  const s=n.style||{},css=[];
+  let col=String(s.color||'').trim()||String(n.getAttribute('color')||'').trim();
+  if(col&&RT_COLOR.test(col))css.push('color:'+col);
+  const bg=String(s.backgroundColor||'').trim();
+  if(bg&&RT_COLOR.test(bg))css.push('background-color:'+bg);
+  let fs=String(s.fontSize||'').trim();
+  if(!fs&&n.nodeName==='FONT'){const k=parseInt(n.getAttribute('size'),10);if(k>=1&&k<=7)fs=RT_PX[k]+'px'}
+  if(RT_KW[fs])fs=RT_KW[fs]+'px';
+  const m=/^(\d+(?:\.\d+)?)(px|pt)$/.exec(fs);
+  if(m){const v=+m[1]*(m[2]==='pt'?4/3:1);if(v>=6&&v<=200)css.push('font-size:'+Math.round(v*10)/10+'px')}
+  const ff=String(s.fontFamily||'').trim()||String(n.getAttribute('face')||'').trim();
+  if(ff&&ff!=='inherit'&&RT_FAMILY.test(ff))css.push('font-family:'+ff);
+  return css.join(';');
+}
+
+/* Чистит содержимое: оставляет только жирный/курсив/подчёркивание/зачёркивание, индексы, цвет, фон, шрифт, размер, выравнивание и переносы строк.
+   Возвращает НОВЫЙ div. Всё остальное (скрипты, картинки, ссылки, чужие стили) выбрасывается. */
+function rtSanitize(src){
+  const out=document.createElement('div');
+  (function walk(from,to){
+    for(const n of Array.from(from.childNodes)){
+      if(n.nodeType===3){
+        const t=n.data.replace(/[\u200b\ufeff]/g,'').replace(/\u00a0/g,' ');
+        if(t)to.appendChild(document.createTextNode(t));
+        continue;
+      }
+      if(n.nodeType!==1)continue;
+      const tag=n.nodeName;
+      if(tag==='BR'){to.appendChild(rtBr());continue}
+      if(RT_DROP.test(tag)||(n.classList&&n.classList.contains('chip')))continue;
+      if(RT_BLOCK.test(tag)){
+        const al=String((n.style&&n.style.textAlign)||n.getAttribute('align')||'').toLowerCase();
+        if((tag==='DIV'||tag==='P')&&RT_ALIGN.test(al)){
+          const d=document.createElement('div');d.style.textAlign=al;walk(n,d);
+          if(d.firstChild)to.appendChild(d);
+          continue;
+        }
+        const last=to.lastChild;
+        if(last&&!rtIsBr(last)&&last.nodeName!=='DIV')to.appendChild(rtBr());
+        walk(n,to);
+        if(n.nextSibling&&to.lastChild&&!rtIsBr(to.lastChild)&&to.lastChild.nodeName!=='DIV')to.appendChild(rtBr());
+        continue;
+      }
+      const tags=[],s=n.style||{};
+      if(tag==='B'||tag==='STRONG')tags.push('b');
+      else if(tag==='I'||tag==='EM')tags.push('i');
+      else if(tag==='U')tags.push('u');
+      else if(tag==='S'||tag==='STRIKE'||tag==='DEL')tags.push('s');
+      else if(tag==='SUB')tags.push('sub');
+      else if(tag==='SUP')tags.push('sup');
+      const fw=String(s.fontWeight||'');
+      if(fw==='bold'||fw==='bolder'||+fw>=600)tags.push('b');
+      if(s.fontStyle==='italic')tags.push('i');
+      const td=String(s.textDecorationLine||s.textDecoration||'');
+      if(/underline/.test(td))tags.push('u');
+      if(/line-through/.test(td))tags.push('s');
+      const css=rtCssOf(n);
+      let host=to,first=null;
+      const make=name=>{const e=document.createElement(name);host.appendChild(e);if(!first)first=e;host=e;return e};
+      [...new Set(tags)].forEach(make);
+      if(css)make('span').style.cssText=css;
+      walk(n,host);
+      if(first&&!first.textContent&&!first.querySelector('br'))first.remove();
+    }
+  })(src,out);
+  return out;
+}
+/* Текст из очищенного дерева: <br> → перевод строки */
+function rtText(root){
+  let s='';
+  (function w(n){
+    for(const c of n.childNodes){
+      if(c.nodeType===3)s+=c.data;
+      else if(rtIsBr(c))s+='\n';
+      else if(c.nodeType===1){
+        const blk=c.nodeName==='DIV';
+        if(blk&&s&&!s.endsWith('\n'))s+='\n';
+        w(c);
+        if(blk&&!s.endsWith('\n'))s+='\n';
+      }
+    }
+  })(root);
+  return s;
+}
+/* Редактируемый узел → строка для хранения */
+function rtSerialize(el){
+  const c=rtSanitize(el);
+  while(c.lastChild&&rtIsBr(c.lastChild))c.lastChild.remove();
+  if(!c.firstChild)return '';
+  return c.querySelector('*:not(br)')?RT_MARK+c.innerHTML:rtText(c);
+}
+/* Сохранённая строка → безопасный HTML */
+function rtToHTML(v){
+  v=String(v==null?'':v);
+  if(v.startsWith(RT_MARK)){
+    const t=document.createElement('template');t.innerHTML=v.slice(RT_MARK.length);
+    return rtSanitize(t.content).innerHTML;
+  }
+  return esc(v).replace(/\r\n?|\n/g,'<br>');
+}
+/* Сохранённая строка → обычный текст (для заголовков, подписей, названий листов) */
+function rtPlain(v){
+  v=String(v==null?'':v);
+  if(!v.startsWith(RT_MARK))return v;
+  const t=document.createElement('template');t.innerHTML=v.slice(RT_MARK.length);
+  return rtText(rtSanitize(t.content)).replace(/\n+$/,'');
+}
+
+const rtBoxOf=n=>{const el=n&&(n.nodeType===1?n:n.parentElement);return el&&el.closest?el.closest('rt-box,#sheetTitle,#sheetSubtitle'):null};
+const rtSingle=b=>b.hasAttribute('data-single')||b.id==='sheetTitle'||b.id==='sheetSubtitle';
+function rtPutRange(r){const s=window.getSelection();s.removeAllRanges();s.addRange(r)}
+/* Поставить курсор на позицию idx по символам текста (Infinity — в конец) */
+function rtSetCaret(box,idx){
+  const tw=document.createTreeWalker(box,NodeFilter.SHOW_TEXT),r=document.createRange();
+  let n,left=idx;
+  while((n=tw.nextNode())){
+    if(left<=n.data.length){r.setStart(n,left);r.collapse(true);rtPutRange(r);return}
+    left-=n.data.length;
+  }
+  r.selectNodeContents(box);r.collapse(false);rtPutRange(r);
+}
+
+class RtBox extends HTMLElement{
+  connectedCallback(){
+    if(this._rt)return;this._rt=true;
+    if(!this.hasAttribute('contenteditable'))this.setAttribute('contenteditable','true');
+    this.setAttribute('role','textbox');
+    if(!this.hasAttribute('data-single'))this.setAttribute('aria-multiline','true');
+    const rows=parseInt(this.getAttribute('data-rows'),10);
+    if(rows>0)this.style.minHeight='calc('+(rows*1.5)+'em + 22px)';
+    // браузер любит оставлять <br> в пустом поле — убираем, чтобы работала подсказка
+    this.addEventListener('input',()=>{if(this.firstChild&&!this.textContent&&!this.querySelector('img'))this.innerHTML=''});
+  }
+  get value(){return rtSerialize(this)}
+  set value(v){this.innerHTML=rtToHTML(v)}
+  select(){const r=document.createRange();r.selectNodeContents(this);rtPutRange(r)}
+}
+customElements.define('rt-box',RtBox);
+
+/* Enter: перенос строки (в однострочных полях — просто выход из поля) */
+document.addEventListener('keydown',e=>{
+  const b=rtBoxOf(e.target);
+  if(!b||b.tagName!=='RT-BOX'||e.key!=='Enter'||e.isComposing||e.defaultPrevented)return;
+  e.preventDefault();
+  if(rtSingle(b)){b.blur();return}
+  document.execCommand('insertLineBreak');
+});
+document.addEventListener('beforeinput',e=>{          // экранная клавиатура телефонов
+  const b=rtBoxOf(e.target);
+  if(!b||b.tagName!=='RT-BOX'||e.inputType!=='insertParagraph'||e.defaultPrevented)return;
+  e.preventDefault();
+  if(rtSingle(b)){b.blur();return}
+  document.execCommand('insertLineBreak');
+});
+/* Вставка: по умолчанию обычный текст; текст, скопированный из этого же листа, сохраняет форматирование */
+function rtInsertText(text,single){
+  const lines=String(text).replace(/\r\n?/g,'\n').split('\n');
+  if(single){document.execCommand('insertText',false,lines.join(' '));return}
+  lines.forEach((ln,i)=>{if(i)document.execCommand('insertLineBreak');if(ln)document.execCommand('insertText',false,ln)});
+}
+document.addEventListener('paste',e=>{
+  const b=rtBoxOf(e.target);
+  if(!b||b.tagName!=='RT-BOX'||!e.clipboardData)return;
+  const cd=e.clipboardData;
+  if(Array.from(cd.files||[]).some(f=>f.type&&f.type.startsWith('image/')))return;   // картинки обрабатывает блок вложений
+  e.preventDefault();
+  const html=cd.getData('text/html');
+  if(html&&html.indexOf('data-rt="1"')>=0&&!rtSingle(b)){
+    const t=document.createElement('template');t.innerHTML=html;
+    document.execCommand('insertHTML',false,rtSanitize(t.content).innerHTML);
+  }else rtInsertText(cd.getData('text/plain'),rtSingle(b));
+});
+function rtCopy(e,cut){
+  const b=rtBoxOf(e.target),sel=window.getSelection();
+  if(!b||b.tagName!=='RT-BOX'||!sel.rangeCount||sel.isCollapsed||!e.clipboardData)return;
+  const rg=sel.getRangeAt(0);
+  let cur=rg.cloneContents(),n=rg.commonAncestorContainer;
+  if(n.nodeType===3)n=n.parentNode;
+  while(n&&n!==b){const w=n.cloneNode(false);w.appendChild(cur);cur=w;n=n.parentNode}
+  const d=document.createElement('div');d.appendChild(cur);
+  const clean=rtSanitize(d);
+  e.clipboardData.setData('text/html','<div data-rt="1">'+clean.innerHTML+'</div>');
+  e.clipboardData.setData('text/plain',rtText(clean));
+  e.preventDefault();
+  if(cut)document.execCommand('delete');
+}
+document.addEventListener('copy',e=>rtCopy(e,false));
+document.addEventListener('cut',e=>rtCopy(e,true));
+document.addEventListener('drop',e=>{                 // чужой HTML и файлы в поля не бросаем
+  const b=rtBoxOf(e.target);
+  if(b&&b.tagName==='RT-BOX'&&!(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files.length))e.preventDefault();
+},true);
+
+/* ============================================================
+   Панель форматирования (появляется внизу, когда курсор в любом тексте)
+   ============================================================ */
+const RT_FONTS=[['По умолчанию',null],['Georgia','Georgia, serif'],['Times New Roman','"Times New Roman", Times, serif'],['Palatino','"Palatino Linotype", Palatino, serif'],['Arial','Arial, Helvetica, sans-serif'],['Verdana','Verdana, Geneva, sans-serif'],['Trebuchet MS','"Trebuchet MS", sans-serif'],['Tahoma','Tahoma, sans-serif'],['Courier New','"Courier New", monospace'],['Comic Sans','"Comic Sans MS", cursive'],['Impact','Impact, Charcoal, sans-serif'],['Brush Script','"Brush Script MT", cursive'],['Рукописный','cursive'],['Декоративный','fantasy']];
+const RT_SIZE_LIST=[10,12,14,16,18,20,24,28,32,40,48,64];
+const RT_FORE=['#ffffff','#d9d9d9','#9aa0a6','#5f6368','#202124','#000000','#ff6b6b','#e53935','#b71c1c','#ff9800','#ffd54f','#fff176','#8bc34a','#43a047','#1b5e20','#26c6da','#1e88e5','#0d47a1','#7e57c2','#ab47bc','#f06292','#d4b37a','#8d6e63','#4e342e'];
+const RT_BACK=['rgba(255,235,59,.4)','rgba(255,171,64,.4)','rgba(255,112,67,.4)','rgba(239,83,80,.4)','rgba(240,98,146,.4)','rgba(186,104,200,.4)','rgba(149,117,205,.4)','rgba(66,165,245,.4)','rgba(38,198,218,.4)','rgba(102,187,106,.4)','rgba(156,204,101,.4)','rgba(212,179,122,.4)','#ffffff','#bdbdbd','#616161','#000000'];
+const rtAlignIco=d=>'<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="'+d+'" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+const rtBar=document.createElement('div');
+rtBar.id='rtBar';rtBar.hidden=true;rtBar.setAttribute('role','toolbar');rtBar.setAttribute('aria-label','Форматирование текста');
+rtBar.innerHTML=
+ '<button type="button" data-c="bold" title="Жирный (Ctrl+B)" aria-label="Жирный"><b>Ж</b></button>'+
+ '<button type="button" data-c="italic" title="Наклонный (Ctrl+I)" aria-label="Наклонный"><i>К</i></button>'+
+ '<button type="button" data-c="underline" title="Подчёркнутый (Ctrl+U)" aria-label="Подчёркнутый"><u>Ч</u></button>'+
+ '<button type="button" data-c="strikeThrough" title="Зачёркнутый" aria-label="Зачёркнутый"><s>З</s></button>'+
+ '<span class="sep"></span>'+
+ '<button type="button" data-m="font" class="wide" title="Шрифт">Шрифт ▾</button>'+
+ '<button type="button" data-m="size" class="wide" title="Размер текста">Размер ▾</button>'+
+ '<button type="button" data-m="fore" title="Цвет текста" aria-label="Цвет текста"><span class="ico-a">А</span></button>'+
+ '<button type="button" data-m="back" title="Выделение цветом" aria-label="Выделение цветом"><span class="ico-m">ab</span></button>'+
+ '<span class="sep"></span>'+
+ '<button type="button" data-c="justifyLeft" title="По левому краю" aria-label="По левому краю">'+rtAlignIco('M2 3h12M2 6.5h8M2 10h12M2 13.5h8')+'</button>'+
+ '<button type="button" data-c="justifyCenter" title="По центру" aria-label="По центру">'+rtAlignIco('M2 3h12M4 6.5h8M2 10h12M4 13.5h8')+'</button>'+
+ '<button type="button" data-c="justifyRight" title="По правому краю" aria-label="По правому краю">'+rtAlignIco('M2 3h12M6 6.5h8M2 10h12M6 13.5h8')+'</button>'+
+ '<button type="button" data-c="justifyFull" title="По ширине" aria-label="По ширине">'+rtAlignIco('M2 3h12M2 6.5h12M2 10h12M2 13.5h12')+'</button>'+
+ '<span class="sep"></span>'+
+ '<button type="button" data-c="superscript" title="Верхний индекс" aria-label="Верхний индекс">x²</button>'+
+ '<button type="button" data-c="subscript" title="Нижний индекс" aria-label="Нижний индекс">x₂</button>'+
+ '<span class="sep"></span>'+
+ '<button type="button" data-c="removeFormat" class="wide" title="Убрать форматирование у выделенного" aria-label="Убрать форматирование">Сброс</button>'+
+ '<button type="button" data-c="undo" title="Отменить (Ctrl+Z)" aria-label="Отменить">↶</button>'+
+ '<button type="button" data-c="redo" title="Повторить (Ctrl+Y)" aria-label="Повторить">↷</button>';
+const rtPop=document.createElement('div');
+rtPop.id='rtPop';rtPop.hidden=true;
+document.body.appendChild(rtBar);document.body.appendChild(rtPop);
+
+let rtCur=null,rtSaved=null,rtLock=false;
+const rtState=()=>{
+  rtBar.querySelectorAll('[data-c]').forEach(b=>{
+    const c=b.dataset.c;if(c==='removeFormat'||c==='undo'||c==='redo')return;
+    let on=false;try{on=document.queryCommandState(c)}catch(err){}
+    b.classList.toggle('on',!!on&&!!rtCur);
+  });
+};
+document.addEventListener('selectionchange',()=>{
+  const s=window.getSelection();if(!s.rangeCount)return;
+  const r=s.getRangeAt(0),h=rtBoxOf(r.commonAncestorContainer);
+  if(h&&h.tagName!=='RT-BOX'&&h.id!=='sheetTitle'&&h.id!=='sheetSubtitle')return;
+  if(h){rtSaved={host:h,range:r.cloneRange()};if(rtCur===h)rtState()}
+});
+function rtPlace(){
+  const vv=window.visualViewport,off=vv?Math.max(0,window.innerHeight-vv.height-vv.offsetTop):0;
+  rtBar.style.bottom=off+'px';
+  if(!rtPop.hidden)rtPop.style.bottom=(off+rtBar.offsetHeight+8)+'px';
+}
+if(window.visualViewport){window.visualViewport.addEventListener('resize',rtPlace);window.visualViewport.addEventListener('scroll',rtPlace)}
+window.addEventListener('resize',rtPlace);
+function rtShow(h){
+  rtCur=h;rtBar.hidden=false;document.body.classList.add('rt-open');rtPlace();rtState();
+}
+function rtHide(){
+  rtCur=null;rtBar.hidden=true;rtPop.hidden=true;document.body.classList.remove('rt-open');
+}
+document.addEventListener('focusin',e=>{
+  const h=rtBoxOf(e.target);
+  if(h&&!(e.target.classList&&e.target.classList.contains('rich')))rtShow(h);
+});
+document.addEventListener('focusout',()=>{
+  setTimeout(()=>{
+    if(rtLock)return;
+    const a=document.activeElement;
+    if(!rtBoxOf(a)&&!(a&&a.closest&&a.closest('#rtBar,#rtPop')))rtHide();
+  },0);
+});
+// Кнопки панели не забирают фокус у текста
+const rtKeepFocus=e=>{if(!e.target.closest('input,label'))e.preventDefault()};
+rtBar.addEventListener('pointerdown',rtKeepFocus);rtBar.addEventListener('mousedown',rtKeepFocus);
+rtPop.addEventListener('pointerdown',rtKeepFocus);rtPop.addEventListener('mousedown',rtKeepFocus);
+document.addEventListener('pointerdown',e=>{if(!rtPop.hidden&&!e.target.closest('#rtPop,#rtBar'))rtPop.hidden=true},true);
+
+function rtFocus(){
+  const h=rtCur||(rtSaved&&rtSaved.host);if(!h)return null;
+  if(document.activeElement!==h){
+    h.focus();
+    if(rtSaved&&rtSaved.host===h){try{rtPutRange(rtSaved.range)}catch(err){}}
+  }
+  rtCur=h;return h;
+}
+const rtFire=h=>h.dispatchEvent(new Event('input',{bubbles:true}));
+/* Для пустого выделения (просто курсор): вставляем «заготовку» — всё, что напечатаешь дальше, будет оформлено */
+function rtPending(css){
+  const sel=window.getSelection();if(!sel.rangeCount)return;
+  const r=sel.getRangeAt(0),sp=document.createElement('span');
+  sp.style.cssText=css;sp.textContent='\u200b';
+  r.insertNode(sp);
+  const nr=document.createRange();nr.setStart(sp.firstChild,1);nr.collapse(true);rtPutRange(nr);
+  rtFire(rtCur);
+}
+function rtCmd(cmd){
+  const h=rtFocus();if(!h)return;
+  document.execCommand('styleWithCSS',false,false);
+  document.execCommand(cmd,false,null);
+  rtState();
+}
+function rtSize(px){
+  const h=rtFocus();if(!h)return;
+  const val=px+'px',sel=window.getSelection();
+  if(sel.isCollapsed){rtPending('font-size:'+val);return}
+  document.execCommand('styleWithCSS',false,false);
+  document.execCommand('fontSize',false,'7');
+  h.querySelectorAll('font[size="7"],span').forEach(f=>{
+    if(f.tagName==='FONT'){if(f.getAttribute('size')==='7'){f.removeAttribute('size');f.style.fontSize=val}}
+    else if(f.style.fontSize==='xxx-large')f.style.fontSize=val;
+  });
+  rtFire(h);
+}
+function rtFont(stack){
+  const h=rtFocus();if(!h)return;
+  const fam=stack||window.getComputedStyle(h).fontFamily,sel=window.getSelection();
+  if(sel.isCollapsed){rtPending('font-family:'+fam);return}
+  document.execCommand('styleWithCSS',false,true);
+  document.execCommand('fontName',false,fam);
+  rtFire(h);
+}
+function rtColor(kind,val){
+  const h=rtFocus();if(!h)return;
+  const sel=window.getSelection();
+  if(kind==='fore')rtBar.style.setProperty('--rt-fore',val==='auto'?'var(--text)':val);
+  else rtBar.style.setProperty('--rt-back',val);
+  if(sel.isCollapsed){
+    rtPending(kind==='fore'?'color:'+(val==='auto'?'var(--text)':val):'background-color:'+val);return;
+  }
+  document.execCommand('styleWithCSS',false,true);
+  if(kind==='fore'){
+    if(val==='auto'){
+      document.execCommand('foreColor',false,'#010203');
+      h.querySelectorAll('span,font').forEach(f=>{
+        const c=String(f.style.color||f.getAttribute('color')||'').replace(/\s/g,'').toLowerCase();
+        if(c==='rgb(1,2,3)'||c==='#010203'){f.removeAttribute('color');f.style.color='var(--text)'}
+      });
+    }else document.execCommand('foreColor',false,val);
+  }else if(!document.execCommand('hiliteColor',false,val))document.execCommand('backColor',false,val);
+  rtFire(h);
+}
+
+function rtOpenMenu(kind,btn){
+  if(!rtPop.hidden&&rtPop.dataset.k===kind){rtPop.hidden=true;return}
+  let html='';
+  if(kind==='font')html=RT_FONTS.map(([n,s])=>'<button type="button" class="opt" data-v="'+esc(s||'')+'" style="font-family:'+esc(s||'inherit')+'">'+n+'</button>').join('');
+  else if(kind==='size')html='<div class="grid sizes">'+RT_SIZE_LIST.map(n=>'<button type="button" class="opt" data-v="'+n+'">'+n+'</button>').join('')+'</div><button type="button" class="opt" data-v="">Размер по умолчанию</button>';
+  else{
+    const list=kind==='fore'?RT_FORE:RT_BACK;
+    html='<div class="grid sw">'+list.map(c=>'<button type="button" class="swatch" data-v="'+c+'" style="background:'+c+'" aria-label="'+c+'"></button>').join('')+'</div>'+
+      '<button type="button" class="opt" data-v="'+(kind==='fore'?'auto':'transparent')+'">'+(kind==='fore'?'Цвет по умолчанию':'Убрать выделение')+'</button>'+
+      '<label class="opt custom">Свой цвет… <input type="color" value="#d4b37a" aria-label="Свой цвет"></label>';
+  }
+  rtPop.innerHTML=html;rtPop.dataset.k=kind;rtPop.hidden=false;rtPlace();
+}
+rtBar.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.m){rtOpenMenu(b.dataset.m,b);return}
+  if(b.dataset.c){rtPop.hidden=true;rtCmd(b.dataset.c)}
+});
+rtPop.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-v]');if(!b)return;
+  const k=rtPop.dataset.k,v=b.dataset.v;
+  rtPop.hidden=true;
+  if(k==='font')rtFont(v||null);
+  else if(k==='size'){const h=rtCur||(rtSaved&&rtSaved.host);rtSize(v?+v:Math.round(parseFloat(window.getComputedStyle(h||document.body).fontSize)||15))}
+  else rtColor(k,v);
+});
+// «Свой цвет»: системное окно выбора забирает фокус, поэтому выделение запоминается и возвращается
+rtPop.addEventListener('focusin',e=>{if(e.target.type==='color')rtLock=true});
+rtPop.addEventListener('change',e=>{
+  if(e.target.type!=='color')return;
+  const k=rtPop.dataset.k,v=e.target.value;
+  rtLock=false;rtPop.hidden=true;rtColor(k,v);
+});
+rtPop.addEventListener('focusout',e=>{
+  if(e.target.type!=='color')return;
+  setTimeout(()=>{
+    rtLock=false;
+    if(!rtBoxOf(document.activeElement)&&!(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#rtBar,#rtPop'))){
+      if(rtCur&&rtCur.tagName==='RT-BOX')refreshRich(rtCur,true);
+      rtHide();
+    }
+  },200);
+});
+
+/* ============================================================
+   Статическая часть интерфейса
+   ============================================================ */
+$('stats').innerHTML=ABILITIES.map(([id,name])=>`<div class="stat"><label for="${id}">${name}</label><input type="number" id="${id}" min="1" max="30" value="10"><div class="mod" id="mod-${id}">+0</div></div>`).join('');
+$('saves').innerHTML=ABILITIES.map(([id,name])=>`<div class="item"><label class="checkline"><input type="checkbox" data-save="${id}"> ${name}</label><span class="value" id="saveval-${id}">+0</span></div>`).join('');
+$('skills').innerHTML=SKILLS.map(([name],i)=>`<div class="item"><div><label class="checkline"><input type="checkbox" data-skill="${i}" data-kind="prof"> ${name}</label><label class="checkline sub"><input type="checkbox" data-skill="${i}" data-kind="exp"> Компетентность</label></div><span class="value" id="skillval-${i}">+0</span></div>`).join('');
+$('spellSlots').innerHTML=Array.from({length:9},(_,i)=>{const l=i+1;return `<div class="slot"><div class="slot-title">${l}-й уровень</div><div class="slot-inputs"><div><label for="slotTotal${l}">Всего</label><input type="number" min="0" id="slotTotal${l}" value="0"></div><div><label for="slotLeft${l}">Осталось</label><input type="number" min="0" id="slotLeft${l}" value="0"></div></div></div>`}).join('');
+
+const saveRefs=ABILITIES.map(([id])=>({id,cb:document.querySelector(`[data-save="${id}"]`)}));
+const skillRefs=SKILLS.map((_,i)=>({prof:document.querySelector(`[data-skill="${i}"][data-kind="prof"]`),exp:document.querySelector(`[data-skill="${i}"][data-kind="exp"]`)}));
+
+// «Статические» поля, которые просто сохраняют своё значение. Значения по умолчанию берём из разметки.
+const FIELDS=[...document.querySelectorAll('main input[id],main select[id],main textarea[id],main rt-box[id]')].filter(el=>el.type!=='file'&&!el.readOnly);
+const DEFAULTS={};FIELDS.forEach(el=>DEFAULTS[el.id]=el.value);
+
+/* ============================================================
+   Состояние ОДНОГО листа (полностью отделено от остальных)
+   ============================================================ */
+const FACES=[4,6,8,10,12,20,100];                       // быстрые варианты граней; остальное — через «Своя…»
+const DIE_RE=/(\d+)\s*[кkdд]\s*(\d+)/i;
+function parseDie(str){const m=DIE_RE.exec(String(str||''));return m?{n:clamp(+m[1],1,99),f:clamp(+m[2],2,1000)}:{n:1,f:6}}
+function normSpec(v){const t=String(v||'').trim().replace(/\s+/g,' ');if(!t)return '';return /^[+\-−–]/.test(t)?t.replace(/^[−–]/,'-'):'+'+t}
+const dieText=w=>`${w.n}к${w.f}`;
+const cleanImgs=a=>Array.isArray(a)?a.filter(v=>typeof v==='string'&&v.startsWith('data:image/')):[];
+const newWeapon=()=>({images:[],name:'Новое оружие',die:'1к6',n:1,f:6,custom:false,special:false,spec:'',desc:'',profDmg:true,ability:'dex',type:'Колющий',prof:false,range:'5 футов'});
+const newSummon=()=>({images:[],name:'Новый саммон',kind:'',ac:'10',hp:'0',hpMax:'0',speed:'30 фт.',str:'10',dex:'10',con:'10',int:'10',wis:'10',cha:'10',attacks:'',notes:'',c:false});
+const newSpell=kind=>({images:[],kind,name:kind==='cantrip'?'Новый заговор':'Новое заклинание',level:kind==='cantrip'?0:1,time:'1 действие',range:'',duration:'Мгновенно',components:'',prepared:false,concentration:false,ritual:false,description:''});
+const blankState=(title)=>({fields:{},saves:[],skills:{},weapons:[],inventory:[],features:[],traits:[],spells:[],summons:[],attach:{},title:title||DEFAULT_TITLE,subtitle:DEFAULT_SUBTITLE,titleEdited:false,image:''});
+let S=blankState();          // состояние открытого листа
+let loadedId=null;           // id листа, чьё содержимое сейчас в интерфейсе — единственное место, куда пишет saveNow()
+
+function normInv(a,depth=0){
+  if(!Array.isArray(a)||depth>20)return [];
+  return a.map(it=>(it&&typeof it==='object')
+    ?{name:String(it.name||''),qty:String(it.qty==null?'':it.qty),desc:String(it.desc||''),open:!!it.open,items:normInv(it.items,depth+1)}
+    :{name:String(it==null?'':it),qty:'',desc:'',open:false,items:[]});
+}
+function normalize(o){
+  const s=blankState(typeof o.title==='string'&&o.title?o.title:DEFAULT_TITLE);
+  if(o.fields&&typeof o.fields==='object')s.fields={...o.fields};
+  if(Array.isArray(o.saves))s.saves=o.saves.filter(x=>typeof x==='string');
+  if(o.skills&&typeof o.skills==='object')s.skills={...o.skills};
+  if(Array.isArray(o.weapons))s.weapons=o.weapons.map(w=>{const x={...newWeapon(),...w,...parseDie(w&&w.die)};x.die=dieText(x);x.custom=!FACES.includes(x.f);x.images=cleanImgs(x.images);return x});
+  if(Array.isArray(o.inventory))s.inventory=normInv(o.inventory);
+  if(Array.isArray(o.traits))s.traits=o.traits.map(t=>typeof t==='string'?{name:'',text:t,images:[]}:{name:String((t&&t.name)||''),text:String((t&&t.text)||''),images:cleanImgs(t&&t.images)});
+  // Старый формат: одна общая «черта персонажа» превращается в первую черту
+  const oldTrait=String(s.fields.characterTrait||'').trim();
+  if(!s.traits.length&&oldTrait)s.traits=[{name:'',text:oldTrait,images:[]}];
+  delete s.fields.characterTrait;
+  if(Array.isArray(o.features))s.features=o.features.map(f=>({name:String((f&&f.name)||''),description:String((f&&f.description)||''),images:cleanImgs(f&&f.images)}));
+  if(Array.isArray(o.spells))s.spells=o.spells.map(sp=>{const x={...newSpell((sp&&sp.kind)==='cantrip'?'cantrip':'spell'),...sp};x.images=cleanImgs(x.images);return x});
+  if(Array.isArray(o.summons))s.summons=o.summons.map(x=>{const r=newSummon();if(x&&typeof x==='object'){for(const k of Object.keys(r)){if(k==='images'||k==='c')continue;if(x[k]!==undefined&&x[k]!==null)r[k]=String(x[k])}r.c=!!x.c;r.images=cleanImgs(x.images)}return r});
+  if(o.attach&&typeof o.attach==='object')for(const k of Object.keys(o.attach))s.attach[k]=cleanImgs(o.attach[k]);
+  if(typeof o.subtitle==='string')s.subtitle=o.subtitle;
+  s.titleEdited=!!o.titleEdited;
+  if(typeof o.image==='string')s.image=o.image;
+  return s;
+}
+
+/* Перенос данных из формата старой версии (V6) */
+function migrate(old){
+  const o={fields:{},saves:[],skills:{},weapons:[],title:old.sheetTitle,subtitle:old.sheetSubtitle,titleEdited:old.titleManuallyEdited,image:old.imageSrc,
+    inventory:old.inventoryItems,features:old.characterFeatures,spells:old.spells};
+  const wd=Array.isArray(old.weaponDefs)?old.weaponDefs.map(w=>({...w})):[];
+  const sk=n=>(o.skills[n]=o.skills[n]||{});
+  (Array.isArray(old.controls)?old.controls:[]).forEach(c=>{
+    const id=c&&c.id;if(!id)return;
+    let m;
+    if(id.startsWith('save-')){if(c.checked)o.saves.push(id.slice(5));}
+    else if(id.startsWith('skill-')){sk(id.slice(6)).prof=!!c.checked;}
+    else if(id.startsWith('expert-')){sk(id.slice(7)).exp=!!c.checked;}
+    else if((m=id.match(/^w-(name|type|range|ability|die|prof)-(\d+)$/))){const w=wd[+m[2]];if(w)w[m[1]]=m[1]==='prof'?!!c.checked:c.value;}
+    else if(id in DEFAULTS||id==='characterTrait')o.fields[id]=c.value;
+  });
+  o.weapons=wd;
+  return normalize(o);
+}
+
+function nonEmptyAttach(){const o={};Object.keys(S.attach).forEach(k=>{if(S.attach[k].length)o[k]=S.attach[k]});return o}
+function collectState(){
+  const fields={};FIELDS.forEach(el=>fields[el.id]=el.value);
+  const skills={};skillRefs.forEach((r,i)=>{if(r.prof.checked)skills[SKILLS[i][0]]={prof:true,exp:r.exp.checked}});
+  return {v:7,fields,saves:saveRefs.filter(r=>r.cb.checked).map(r=>r.id),skills,
+    weapons:S.weapons,inventory:S.inventory,features:S.features,traits:S.traits,attach:nonEmptyAttach(),spells:S.spells,summons:S.summons,
+    title:rtSerialize($('sheetTitle')),subtitle:rtSerialize($('sheetSubtitle')),titleEdited:S.titleEdited,image:S.image};
+}
+
+function applyState(s){
+  S=s;
+  FIELDS.forEach(el=>{
+    let v=s.fields[el.id];if(v===undefined||v===null)v=DEFAULTS[el.id];
+    el.value=v;
+    if(el.tagName==='SELECT'&&el.value!==String(v))el.value=DEFAULTS[el.id];
+  });
+  saveRefs.forEach(r=>r.cb.checked=s.saves.includes(r.id));
+  skillRefs.forEach((r,i)=>{const k=s.skills[SKILLS[i][0]]||{};r.prof.checked=!!(k.prof||k.exp);r.exp.checked=!!k.exp;});
+  $('sheetTitle').innerHTML=rtToHTML(s.title||DEFAULT_TITLE);
+  $('sheetSubtitle').innerHTML=rtToHTML(s.subtitle||DEFAULT_SUBTITLE);
+  showImage();renderAll();fillAttach();rememberMax();recalc();
+}
+
+/* ============================================================
+   Хранилище: коллекция листов + отдельный ключ на каждый лист
+   ============================================================ */
+const stateKey=id=>STATE_PREFIX+id;
+function makeId(used){
+  let id;do{id='char_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8)}while(used&&used.has(id)||store.get(stateKey(id))!==null);
+  return id;
+}
+function readState(id){
+  const cur=store.json(stateKey(id));if(cur&&typeof cur==='object')return normalize(cur);
+  const old=store.json(OLD_PREFIX+id);if(old&&typeof old==='object')return migrate(old);
+  return null;
+}
+function loadCollection(){
+  const d=store.json(STORE_KEY);
+  if(d&&Array.isArray(d.characters)&&d.characters.length){
+    const seen=new Set();
+    const characters=d.characters.filter(c=>c&&c.id&&!seen.has(c.id)&&seen.add(c.id)).map((c,i)=>{const id=String(c.id);let cls=typeof c.cls==='string'?c.cls:'';if(!cls){const st=store.json(stateKey(id));cls=rtPlain((st&&st.fields&&st.fields.className)||'')}return {id,name:String(c.name||'').trim()||'Персонаж '+(i+1),cls:cls.trim()}});
+    if(characters.length)return {activeId:characters.some(c=>c.id===d.activeId)?d.activeId:characters[0].id,characters};
+  }
+  // Первый запуск: однократно переносим самое старое автосохранение в первый лист.
+  const id=makeId();let name='Персонаж 1';
+  const legacy=store.json(LEGACY_KEY);
+  if(legacy&&typeof legacy==='object'){
+    const st=migrate(legacy);store.set(stateKey(id),JSON.stringify(st));
+    name=rtPlain(st.fields.name||'').trim()||(rtPlain(st.title)!==DEFAULT_TITLE?rtPlain(st.title):name);
+  }
+  return {activeId:id,characters:[{id,name,cls:''}]};
+}
+let collection=loadCollection();
+const activeCharacter=()=>collection.characters.find(c=>c.id===collection.activeId)||collection.characters[0];
+function persistCollection(){
+  const ok=store.set(STORE_KEY,JSON.stringify({version:2,activeId:collection.activeId,characters:collection.characters.map(c=>({id:c.id,name:c.name,cls:c.cls||''}))}));
+  if(!ok)setStatus('Не удалось сохранить: возможно, хранилище браузера переполнено');
+  return ok;
+}
+function setStatus(t){const el=$('saveStatus');if(el)el.textContent=t}
+
+function displayName(index){
+  const n=rtPlain($('name').value).trim();if(n)return n;
+  const t=$('sheetTitle').textContent.trim();
+  return t&&t!==DEFAULT_TITLE?t:'Персонаж '+(index+1);
+}
+
+let saveTimer=null;
+function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveNow,350);setStatus('Сохранение…')}
+/* Сохраняет содержимое интерфейса ТОЛЬКО в тот лист, который в нём открыт (loadedId). */
+function saveNow(){
+  clearTimeout(saveTimer);saveTimer=null;
+  const c=collection.characters.find(x=>x.id===loadedId);if(!c)return false;
+  c.name=displayName(collection.characters.indexOf(c));c.cls=rtPlain($('className').value).trim();
+  const ok=store.set(stateKey(c.id),JSON.stringify(collectState()));
+  persistCollection();updateMenu();
+  setStatus(!ok?'Не удалось сохранить: возможно, хранилище браузера переполнено':storageOk?'Изменения сохранены автоматически':'Память браузера недоступна — скачай резервную копию внизу страницы');
+  return ok;
+}
+function loadActive(){
+  const c=activeCharacter();loadedId=c.id;collection.activeId=c.id;
+  applyState(readState(c.id)||blankState(c.name));
+  persistCollection();updateMenu();
+}
+
+/* ============================================================
+   Действия над листами (без перезагрузки страницы)
+   ============================================================ */
+const modal=$('modal'),mTitle=$('modalTitle'),mText=$('modalText'),mInput=$('modalInput'),mOk=$('modalOk'),mCancel=$('modalCancel');
+let modalClose=null;
+/* Окно вместо prompt/confirm/alert (в части iOS-браузеров системные окна не работают).
+   Результат: true / строка — «ОК», null — отмена. */
+function showModal(o){
+  return new Promise(resolve=>{
+    const prev=document.activeElement;
+    mTitle.textContent=o.title||'';mText.textContent=o.text||'';mText.hidden=!o.text;
+    mInput.hidden=o.input==null;mInput.value=o.input==null?'':o.input;
+    mOk.textContent=o.ok||'ОК';mOk.className=o.danger?'danger':'primary';
+    mCancel.hidden=o.cancel===null;mCancel.textContent=o.cancel||'Отмена';
+    modal.hidden=false;
+    const close=val=>{modal.hidden=true;modalClose=null;if(prev&&prev.focus&&document.contains(prev))prev.focus();resolve(val)};
+    modalClose=()=>close(o.cancel===null?true:null);
+    mOk.onclick=()=>close(o.input==null?true:mInput.value);
+    mCancel.onclick=()=>close(null);
+    mInput.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();mOk.click()}};
+    setTimeout(()=>{if(!mInput.hidden){mInput.focus();mInput.select()}else mOk.focus()},30);
+  });
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modalClose)modalClose()});
+modal.addEventListener('click',e=>{if(e.target===modal&&modalClose)modalClose()});
+const notify=(title,text)=>showModal({title,text,cancel:null});
+
+async function createCharacter(){
+  saveNow();
+  const suggested='Персонаж '+(collection.characters.length+1);
+  const entered=await showModal({title:'Новый персонаж',text:'Введи имя нового персонажа',input:suggested,ok:'Создать'});
+  if(entered===null)return;
+  const name=String(entered).trim()||suggested;
+  const id=makeId(new Set(collection.characters.map(c=>c.id)));
+  const st=blankState(name);st.fields.name=name;
+  store.set(stateKey(id),JSON.stringify(st));
+  collection.characters.push({id,name,cls:''});collection.activeId=id;
+  loadActive();window.scrollTo(0,0);
+}
+function switchCharacter(id){
+  if(!id||id===loadedId||!collection.characters.some(c=>c.id===id))return;
+  saveNow();collection.activeId=id;loadActive();window.scrollTo(0,0);
+}
+async function deleteCharacter(){
+  if(collection.characters.length<=1){await notify('Нельзя удалить','Нельзя удалить последний лист. Создай ещё один персонаж.');return}
+  const c=activeCharacter();
+  const yes=await showModal({title:'Удалить лист?',text:'Удалить лист персонажа «'+c.name+'»? Это действие нельзя отменить.',ok:'Удалить',danger:true});
+  if(!yes)return;
+  clearTimeout(saveTimer);saveTimer=null;loadedId=null;   // удаляемый лист больше не сохраняем
+  store.del(stateKey(c.id));store.del(OLD_PREFIX+c.id);
+  collection.characters=collection.characters.filter(x=>x.id!==c.id);
+  collection.activeId=collection.characters[0].id;
+  loadActive();
+}
+async function resetSheet(){
+  const yes=await showModal({title:'Сбросить лист?',text:'Все данные этого листа будут стёрты и заменены исходными значениями.',ok:'Сбросить',danger:true});
+  if(!yes)return;
+  const c=activeCharacter();clearTimeout(saveTimer);
+  applyState(blankState(c.name));saveNow();
+}
+
+/* ============================================================
+   Выпадающее меню выбора листа
+   ============================================================ */
+const menu=$('characterMenu'),menuToggle=$('characterMenuSummary'),picker=$('characterPicker');
+function updateMenu(){
+  const active=activeCharacter();
+  menuToggle.querySelector('.label').textContent=active?'Лист: '+active.name+(active.cls?' · '+active.cls:''):'Выбрать лист персонажа';
+  picker.innerHTML=collection.characters.map(c=>{const on=c.id===collection.activeId;
+    return `<button type="button" role="menuitemradio" aria-checked="${on}" class="character-choice" data-character-id="${esc(c.id)}" tabindex="-1"><span class="choice-text"><span class="choice-name">${esc(c.name)}</span>${c.cls?`<span class="choice-cls">${esc(c.cls)}</span>`:''}</span><span class="choice-hint">${on?'Открыт сейчас':'Открыть'}</span></button>`}).join('');
+}
+const menuItems=()=>[...picker.querySelectorAll('.character-choice')];
+function setMenuOpen(open,focusItem){
+  menu.classList.toggle('open',!!open);menuToggle.setAttribute('aria-expanded',open?'true':'false');
+  if(open&&focusItem){const items=menuItems();focusEl(items.find(b=>b.getAttribute('aria-checked')==='true')||items[0]);}
+}
+menuToggle.addEventListener('click',()=>setMenuOpen(!menu.classList.contains('open')));
+picker.addEventListener('click',e=>{const b=e.target.closest('[data-character-id]');if(!b)return;setMenuOpen(false);menuToggle.focus();switchCharacter(b.dataset.characterId)});
+document.addEventListener('click',e=>{if(!menu.contains(e.target))setMenuOpen(false)});
+menu.addEventListener('keydown',e=>{
+  const open=menu.classList.contains('open'),items=menuItems(),i=items.indexOf(document.activeElement);
+  if(e.key==='Escape'&&open){e.preventDefault();setMenuOpen(false);menuToggle.focus();}
+  else if(e.key==='ArrowDown'){e.preventDefault();if(!open)setMenuOpen(true,true);else focusEl(items[(i+1)%items.length]);}
+  else if(e.key==='ArrowUp'){e.preventDefault();if(!open)setMenuOpen(true,true);else focusEl(items[(i-1+items.length)%items.length]);}
+  else if(e.key==='Home'&&open){e.preventDefault();focusEl(items[0]);}
+  else if(e.key==='End'&&open){e.preventDefault();focusEl(items[items.length-1]);}
+  else if(e.key==='Tab'&&open){setMenuOpen(false);}
+});
+
+/* ============================================================
+   Динамические списки
+   ============================================================ */
+function renderWeapons(){
+  $('weapons').innerHTML=S.weapons.map((w,i)=>`<div class="weapon${w.c?' folded':''}" data-az="weapons:${i}">
+<div class="weapon-top"><button type="button" class="fold-btn" data-act="fold-card" data-list="weapons" data-i="${i}" aria-expanded="${!w.c}" aria-label="Свернуть или развернуть">▾</button><rt-box class="name-ta" data-single contenteditable="true" data-list="weapons" data-i="${i}" data-k="name" aria-label="Название оружия" data-ph="Название оружия">${rtToHTML(w.name)}</rt-box><span class="pill" id="w-pill-${i}"></span></div>
+<div class="weapon-grid three">
+<div><div class="tag">Тип урона</div><rt-box data-single contenteditable="true" data-list="weapons" data-i="${i}" data-k="type" aria-label="Тип урона">${rtToHTML(w.type)}</rt-box></div>
+<div><div class="tag">Дистанция</div><rt-box data-single contenteditable="true" data-list="weapons" data-i="${i}" data-k="range" aria-label="Дистанция">${rtToHTML(w.range)}</rt-box></div>
+<div><div class="tag">Характеристика</div><select data-list="weapons" data-i="${i}" data-k="ability">${ABILITIES.map(([id,n])=>`<option value="${id}" ${w.ability===id?'selected':''}>${n}</option>`).join('')}</select></div></div>
+<div class="weapon-grid">
+<div class="die-cell"><div class="tag">Кость урона</div><div class="die-ctl"><input type="number" inputmode="numeric" min="1" max="99" data-list="weapons" data-i="${i}" data-k="n" value="${w.n}" aria-label="Количество костей"><span class="die-sep">к</span><select data-list="weapons" data-i="${i}" data-k="fsel" aria-label="Количество граней">${FACES.map(f=>`<option value="${f}" ${!w.custom&&w.f===f?'selected':''}>${f}</option>`).join('')}<option value="custom" ${w.custom?'selected':''}>Своя…</option></select>${w.custom?`<input type="number" inputmode="numeric" min="2" max="1000" data-list="weapons" data-i="${i}" data-k="f" value="${w.f}" aria-label="Своё число граней" class="die-custom">`:''}</div></div>
+<div><div class="tag">Владение оружием</div><label class="checkline"><input type="checkbox" data-list="weapons" data-i="${i}" data-k="prof" ${w.prof?'checked':''}> Есть</label></div>
+<div><div class="tag">Бонус атаки</div><div class="value" id="w-atk-${i}">+0</div></div>
+</div>
+<div class="weapon-opts">
+<label class="checkline"><input type="checkbox" data-list="weapons" data-i="${i}" data-k="special" ${w.special?'checked':''}> Особое оружие</label>
+<label class="checkline"><input type="checkbox" data-list="weapons" data-i="${i}" data-k="profDmg" ${w.profDmg?'checked':''}> Бонус владения входит в урон</label></div>
+${w.special?`<div class="field special-cell"><label>Особый урон</label><input data-list="weapons" data-i="${i}" data-k="spec" value="${esc(w.spec)}" placeholder="+1к6, +3, мод ловкости…" aria-label="Особый урон"></div>`:''}
+<div class="weapon-desc"><div class="tag">Описание</div><rt-box contenteditable="true" data-rows="2" data-list="weapons" data-i="${i}" data-k="desc" aria-label="Описание оружия" data-ph="Свойства, особенности, заметки...">${rtToHTML(w.desc||'')}</rt-box></div>
+<div class="dmg-break"><div class="tag">Расчёт урона</div><div class="dmg-parts">
+<div class="part"><span class="pl">Кость урона</span><span class="pv" id="w-b-die-${i}"></span></div>
+<div class="part"><span class="pl" id="w-b-ml-${i}">Модификатор</span><span class="pv" id="w-b-mod-${i}"></span></div>
+${w.special?`<div class="part"><span class="pl">Особый урон</span><span class="pv" id="w-b-spec-${i}"></span></div>`:''}
+<div class="part"><span class="pl">Бонус владения</span><span class="pv" id="w-b-prof-${i}"></span></div>
+<div class="part total"><span class="pl">Итого</span><span class="pv" id="w-dmg-${i}"></span></div></div></div>
+<div class="attach"></div><div class="card-foot"><button type="button" class="danger" data-act="remove" data-list="weapons" data-i="${i}">Удалить оружие</button></div></div>`).join('')||'<p class="empty">Оружие пока не добавлено.</p>';
+}
+function renderFeatures(){
+  $('characterFeatures').innerHTML=S.features.map((f,i)=>`<div class="feature-card" data-az="features:${i}"><div class="feature-top"><rt-box class="name-ta" data-single contenteditable="true" data-list="features" data-i="${i}" data-k="name" aria-label="Название особенности ${i+1}" data-ph="Название особенности">${rtToHTML(f.name)}</rt-box><button type="button" class="danger" data-act="remove" data-list="features" data-i="${i}">Удалить</button></div><rt-box contenteditable="true" data-rows="4" data-list="features" data-i="${i}" data-k="description" aria-label="Описание особенности ${i+1}" data-ph="Описание особенности...">${rtToHTML(f.description)}</rt-box></div>`).join('');
+}
+function renderTraits(){
+  $('characterTraits').innerHTML=S.traits.map((t,i)=>`<div class="feature-card" data-az="traits:${i}"><div class="feature-top"><rt-box class="name-ta" data-single contenteditable="true" data-list="traits" data-i="${i}" data-k="name" aria-label="Название черты ${i+1}" data-ph="Название черты">${rtToHTML(t.name)}</rt-box><button type="button" class="danger" data-act="remove" data-list="traits" data-i="${i}">Удалить</button></div><rt-box contenteditable="true" data-rows="3" data-list="traits" data-i="${i}" data-k="text" aria-label="Описание черты ${i+1}" data-ph="Опиши черту персонажа...">${rtToHTML(t.text)}</rt-box></div>`).join('');
+}
+/* Инвентарь: предметы могут лежать внутри других предметов. Путь к предмету — «2.0.1» (индексы по уровням). */
+function invGet(path){
+  let arr=S.inventory,it=null;
+  for(const k of String(path).split('.')){it=arr&&arr[Number(k)];if(!it)return null;arr=it.items}
+  return it;
+}
+function invParent(path){
+  const parts=String(path).split('.').map(Number),idx=parts.pop();let arr=S.inventory;
+  for(const k of parts)arr=arr[k].items;
+  return{arr,idx};
+}
+function invHTML(arr,base){
+  return arr.map((it,i)=>{
+    const p=base===''?String(i):base+'.'+i,d=`data-list="inventory" data-i="${p}"`,desc=rtPlain(it.desc||'').trim(),kids=it.items||[];
+    return `<div class="inv-item${it.open?' open':''}" data-path="${p}"><div class="inv-main"><rt-box class="name-ta" data-single contenteditable="true" ${d} data-k="name" aria-label="Предмет ${i+1}" data-ph="Название предмета">${rtToHTML(it.name)}</rt-box><input ${d} data-k="qty" class="inv-qty" inputmode="numeric" aria-label="Количество предмета ${i+1}" value="${esc(it.qty||'')}"><button type="button" class="inv-note${desc||kids.length?' has':''}" data-act="inv-toggle" data-i="${p}" aria-expanded="${!!it.open}" aria-label="Описание и содержимое предмета" title="Описание и содержимое">✎</button><button type="button" class="danger" data-act="remove" data-list="inventory" data-i="${p}" aria-label="Удалить предмет" title="Удалить">✕</button></div><div class="inv-body"><rt-box contenteditable="true" data-rows="2" ${d} data-k="desc" aria-label="Описание предмета ${i+1}" data-ph="Описание, свойства, вес, заметки...">${rtToHTML(it.desc)}</rt-box><div class="inv-prev">${desc?rtToHTML(it.desc):''}</div>${kids.length?`<div class="inv-inside"><div class="inv-inside-label">Внутри</div>${invHTML(kids,p)}</div>`:''}</div></div>`;
+  }).join('');
+}
+function renderInventory(){
+  $('inventoryList').innerHTML=invHTML(S.inventory,'');
+  autosizeAll();
+}
+function renderSpells(){
+  const card=(sp,i)=>{const d=`data-list="spells" data-i="${i}"`;
+    const levels=(sp.kind==='cantrip'?[0]:[1,2,3,4,5,6,7,8,9]).map(l=>`<option value="${l}" ${sp.level===l?'selected':''}>${l===0?'Заговор':l+'-й уровень'}</option>`).join('');
+    return `<div class="spell-card${sp.c?' folded':''}" data-az="spells:${i}"><div class="card-head"><button type="button" class="fold-btn" data-act="fold-card" data-list="spells" data-i="${i}" aria-expanded="${!sp.c}" aria-label="Свернуть или развернуть">▾</button><span class="card-title">${esc(rtPlain(sp.name))||'Без названия'}</span><span class="pill">${sp.level===0?'Заговор':sp.level+'-й ур.'}</span></div><div class="spell-grid">
+<div class="field"><label>Название</label><rt-box class="name-ta" data-single contenteditable="true" ${d} data-k="name" aria-label="Название заклинания" data-ph="Название">${rtToHTML(sp.name)}</rt-box></div>
+<div class="field"><label>Уровень</label><select ${d} data-k="level">${levels}</select></div>
+<div class="field"><label>Время накладывания</label><rt-box data-single contenteditable="true" ${d} data-k="time" aria-label="Время накладывания" data-ph="1 действие">${rtToHTML(sp.time)}</rt-box></div>
+<div class="field"><label>Дистанция</label><rt-box data-single contenteditable="true" ${d} data-k="range" aria-label="Дистанция" data-ph="На себя / 18 м">${rtToHTML(sp.range)}</rt-box></div>
+<div class="field"><label>Длительность</label><rt-box data-single contenteditable="true" ${d} data-k="duration" aria-label="Длительность" data-ph="Мгновенно">${rtToHTML(sp.duration)}</rt-box></div>
+<div class="field"><label>Компоненты</label><rt-box data-single contenteditable="true" ${d} data-k="components" aria-label="Компоненты" data-ph="В, С, М">${rtToHTML(sp.components)}</rt-box></div></div>
+<div class="row">${sp.kind==='cantrip'?'':`<label class="checkline"><input type="checkbox" ${d} data-k="prepared" ${sp.prepared?'checked':''}> Подготовлено</label>`}<label class="checkline"><input type="checkbox" ${d} data-k="concentration" ${sp.concentration?'checked':''}> Концентрация</label><label class="checkline"><input type="checkbox" ${d} data-k="ritual" ${sp.ritual?'checked':''}> Ритуал</label></div>
+<div class="field" style="margin-top:8px"><label>Описание / эффект</label><rt-box contenteditable="true" data-rows="3" ${d} data-k="description" aria-label="Описание заклинания" data-ph="Урон, спасбросок, эффект и другие заметки">${rtToHTML(sp.description)}</rt-box></div>
+<div class="attach"></div><div class="card-foot"><button type="button" class="danger" data-act="remove" data-list="spells" data-i="${i}">Удалить</button></div></div>`};
+  const part=(kind,emptyText)=>S.spells.map((sp,i)=>({sp,i})).filter(x=>x.sp.kind===kind).sort((a,b)=>a.sp.level-b.sp.level||a.i-b.i).map(x=>card(x.sp,x.i)).join('')||`<p class="empty">${emptyText}</p>`;
+  $('cantripsList').innerHTML=part('cantrip','Пока нет добавленных заговоров.');
+  $('spellsList').innerHTML=part('spell','Пока нет добавленных заклинаний.');
+}
+function showImage(){
+  const img=$('characterPreview');
+  if(S.image){img.src=S.image;img.style.display='block'}else{img.removeAttribute('src');img.style.display='none'}
+  $('removeImage').style.display=S.image?'':'none';
+}
+const sMod=v=>mod(clamp(Math.round(Number(v)||10),1,30));
+function renderSummons(){
+  const box=$('summons');
+  if(!S.summons.length){box.innerHTML='<p class="empty">Пока никого нет.</p>';return}
+  const num=(s,i,k,label,min)=>`<div class="field"><label>${label}</label><input type="number" inputmode="numeric" min="${min}" data-list="summons" data-i="${i}" data-k="${k}" value="${esc(s[k])}"></div>`;
+  box.innerHTML=S.summons.map((s,i)=>`<div class="summon-card${s.c?' folded':''}" data-az="summons:${i}">
+<div class="summon-top"><button type="button" class="fold-btn" data-act="fold-card" data-list="summons" data-i="${i}" aria-expanded="${!s.c}" aria-label="Свернуть или развернуть">▾</button><rt-box class="name-ta" data-single contenteditable="true" data-list="summons" data-i="${i}" data-k="name" aria-label="Имя саммона" data-ph="Имя или название">${rtToHTML(s.name)}</rt-box><button type="button" class="danger" data-act="remove" data-list="summons" data-i="${i}">Удалить</button></div>
+<div class="summon-grid">
+<div class="field wide"><label>Вид существа</label><rt-box data-single contenteditable="true" data-list="summons" data-i="${i}" data-k="kind" aria-label="Вид существа" data-ph="Например: фамильяр, зверь, элементаль">${rtToHTML(s.kind)}</rt-box></div>
+${num(s,i,'ac','КД',0)}${num(s,i,'hp','Хиты',0)}${num(s,i,'hpMax','Макс. хиты',0)}
+<div class="field"><label>Скорость</label><rt-box data-single contenteditable="true" data-list="summons" data-i="${i}" data-k="speed" aria-label="Скорость" data-ph="30 фт.">${rtToHTML(s.speed)}</rt-box></div>
+</div>
+<div class="s-stats">${ABILITIES.map(([id,n])=>`<div class="s-stat"><label>${n.slice(0,3).toUpperCase()}</label><input type="number" inputmode="numeric" min="1" max="30" data-list="summons" data-i="${i}" data-k="${id}" value="${esc(s[id])}" aria-label="${n}"><span class="mod${sMod(s[id])<0?' neg':''}">${fmt(sMod(s[id]))}</span></div>`).join('')}</div>
+<div class="small-label">Атаки и способности</div><rt-box contenteditable="true" data-rows="3" data-list="summons" data-i="${i}" data-k="attacks" aria-label="Атаки и способности" data-ph="Атаки, бонус попадания, урон, особые способности...">${rtToHTML(s.attacks)}</rt-box>
+<div class="small-label">Заметки</div><rt-box contenteditable="true" data-rows="2" data-list="summons" data-i="${i}" data-k="notes" aria-label="Заметки о саммоне" data-ph="Длительность призыва, концентрация, команды...">${rtToHTML(s.notes)}</rt-box>
+</div>`).join('');
+}
+function renderAll(){renderWeapons();renderFeatures();renderTraits();renderInventory();renderSpells();renderSummons()}
+
+/* Добавление / удаление элементов */
+function addTo(list,item){
+  S[list].push(item);
+  ({weapons:renderWeapons,features:renderFeatures,traits:renderTraits,inventory:renderInventory,spells:renderSpells,summons:renderSummons})[list]();
+  recalc();saveNow();
+  const i=S[list].length-1,el=document.querySelector(`rt-box[data-list="${list}"][data-i="${i}"],input[data-list="${list}"][data-i="${i}"]`);
+  if(el){el.focus();if(el.select)el.select()}
+}
+function removeFrom(list,i){
+  if(list==='inventory'){                       // содержимое удаляемого предмета не пропадает — оно остаётся на этом же уровне
+    const{arr,idx}=invParent(i),it=arr[idx];
+    arr.splice(idx,1,...((it&&it.items)||[]));
+  }else S[list].splice(i,1);
+  ({weapons:renderWeapons,features:renderFeatures,traits:renderTraits,inventory:renderInventory,spells:renderSpells,summons:renderSummons})[list]();
+  recalc();saveNow();
+}
+
+/* ============================================================
+   Расчёты
+   ============================================================ */
+/* ============================================================
+   Формулы в тексте: «1к6 + мод силы», «{мод ловкости * 2}» и т.п.
+   ============================================================ */
+const ABIL_PAT={str:'сил(?:а|ы|у|е|ой|ою)?|str',dex:'ловкост(?:ь|и|ью)?|лов|dex',con:'телосложени(?:е|я|ю|ем|и)?|тел|con',int:'интеллект(?:а|у|ом|е)?|инт|int',wis:'мудрост(?:ь|и|ью)?|муд|wis',cha:'харизм(?:а|ы|у|ой|е)?|хар|cha'};
+const FRULES=(()=>{
+  const WB='(?![а-яa-z0-9])',R=src=>new RegExp(src,'y'),list=[];
+  list.push(['dice',R('(\\d*)\\s*[кkdд]\\s*(\\d+)'+WB)]);
+  list.push(['num',R('\\d+(?:[.,]\\d+)?')]);
+  list.push(['op',R('[+\\-*/()]')]);
+  list.push(['var',R('мод(?:ификатор|\\.)?\\s*заклинани[а-я]*'),()=>mod(abil($('spellAbility').value))]);
+  list.push(['var',R('(?:бонус\\s*)?атак[а-я]*\\s*заклинани[а-я]*'),()=>parseInt($('spellAttack').value,10)||0]);
+  list.push(['var',R('пассивн[а-я]*\\s*внимательн[а-я]*'),()=>Number($('passive').value)||0]);
+  Object.keys(ABIL_PAT).forEach(id=>list.push(['var',R('мод(?:ификатор|\\.)?\\s*(?:характеристики\\s*)?(?:'+ABIL_PAT[id]+')'+WB),()=>mod(abil(id))]));
+  Object.keys(ABIL_PAT).forEach(id=>list.push(['var',R('(?:значение\\s*)?(?:'+ABIL_PAT[id]+')'+WB),()=>abil(id)]));
+  list.push(['var',R('(?:бонус\\s*)?(?:мастерств[а-я]*|владени[а-я]*)|бм'+WB),()=>num('prof')]);
+  list.push(['var',R('(?:уровень|уровня|ур)'+WB),()=>num('level')]);
+  list.push(['var',R('(?:класс\\s*доспеха|кд)'+WB),()=>num('ac')]);
+  list.push(['var',R('скорост[а-я]*'),()=>num('speed')]);
+  list.push(['var',R('макс[а-я.]*\\s*(?:хит[а-я]*|хп)'),()=>num('hpMax')]);
+  list.push(['var',R('(?:тек[а-я.]*\\s*)?(?:хит[а-я]*|хп)'+WB),()=>num('hpNow')]);
+  list.push(['var',R('инициатив[а-я]*'),()=>num('initiativeBonus')]);
+  return list;
+})();
+function fTokens(src){
+  const text=String(src),t=text.toLowerCase().replace(/ё/g,'е').replace(/[−–—]/g,'-').replace(/[×·]/g,'*').replace(/÷/g,'/');
+  const toks=[],notes=[],word=/[a-zа-я]+/y;let i=0;
+  while(i<t.length){
+    const ch=t.charAt(i);
+    if(/[\s.,;:!?]/.test(ch)){i++;continue}
+    let hit=null;
+    for(let k=0;k<FRULES.length&&!hit;k++){const rule=FRULES[k];rule[1].lastIndex=i;const m=rule[1].exec(t);if(m&&m[0].length)hit={type:rule[0],m:m,fn:rule[2]}}
+    if(hit){
+      const m=hit.m;
+      if(hit.type==='dice')toks.push({t:'dice',n:m[1]===''?1:parseInt(m[1],10),f:parseInt(m[2],10)});
+      else if(hit.type==='num')toks.push({t:'num',v:parseFloat(m[0].replace(',','.'))});
+      else if(hit.type==='op')toks.push({t:'op',v:m[0]});
+      else toks.push({t:'num',v:hit.fn()});
+      i+=m[0].length;continue;
+    }
+    word.lastIndex=i;const w=word.exec(t);
+    if(w){notes.push(text.substr(i,w[0].length));i+=w[0].length}
+    else{notes.push(text.charAt(i));i++}
+  }
+  return {toks:toks,notes:notes};
+}
+function fParse(toks){
+  let p=0;
+  const fail=m=>{throw new Error(m)};
+  const V=(n,d)=>({n:n||0,d:d||{}});
+  const addV=(a,b,sg)=>{const d={};Object.keys(a.d).forEach(k=>d[k]=a.d[k]);Object.keys(b.d).forEach(k=>d[k]=(d[k]||0)+sg*b.d[k]);return V(a.n+sg*b.n,d)};
+  const scale=(a,k)=>{const d={};Object.keys(a.d).forEach(f=>d[f]=a.d[f]*k);return V(a.n*k,d)};
+  const hasD=a=>Object.keys(a.d).some(k=>a.d[k]!==0);
+  const isOp=(t,list)=>t&&t.t==='op'&&list.indexOf(t.v)>=0;
+  function atom(){
+    const t=toks[p];if(!t)fail('выражение оборвано');
+    if(t.t==='num'){p++;return V(t.v)}
+    if(t.t==='dice'){p++;const d={};d[t.f]=t.n;return V(0,d)}
+    if(isOp(t,['('])){p++;const v=expr();if(!isOp(toks[p],[')']))fail('не закрыта скобка');p++;return v}
+    if(isOp(t,['+','-'])){p++;const v=atom();return t.v==='-'?scale(v,-1):v}
+    return fail('лишний знак «'+t.v+'»');
+  }
+  function term(){
+    let a=atom();
+    while(isOp(toks[p],['*','/'])){
+      const op=toks[p++].v;let b=atom();
+      if(op==='*'){
+        if(hasD(a)&&hasD(b))fail('кости нельзя умножать друг на друга');
+        if(hasD(b)){const x=a;a=b;b=x}
+        if(hasD(a)){if(Math.floor(b.n)!==b.n)fail('число костей должно быть целым');a=scale(a,b.n)}
+        else a=V(a.n*b.n);
+      }else{
+        if(hasD(b))fail('на кости делить нельзя');
+        if(b.n===0)fail('деление на ноль');
+        if(hasD(a)){Object.keys(a.d).forEach(f=>{if(a.d[f]%b.n!==0)fail('кости не делятся нацело')});a=scale(a,1/b.n)}
+        else a=V(a.n/b.n);
+      }
+    }
+    return a;
+  }
+  function expr(){
+    let a=term();
+    for(;;){
+      const t=toks[p];
+      if(isOp(t,['+','-'])){p++;a=addV(a,term(),t.v==='-'?-1:1)}
+      else if(t&&(t.t==='num'||t.t==='dice'||isOp(t,['(']))){a=addV(a,term(),1)}   // «1к6 мод силы» без знака
+      else break;
+    }
+    return a;
+  }
+  const v=expr();
+  if(p<toks.length)fail('лишний знак «'+(toks[p].v||'')+'»');
+  return v;
+}
+function fFormat(v,signed,notes){
+  const parts=[];
+  Object.keys(v.d).map(Number).sort((a,b)=>b-a).forEach(f=>{const c=v.d[f];if(c)parts.push({neg:c<0,txt:Math.abs(c)+'к'+f})});
+  const n=Math.floor(v.n+1e-9);
+  if(n!==0||!parts.length)parts.push({neg:n<0,txt:String(Math.abs(n))});
+  let out=parts.map((q,i)=>(i===0?(q.neg?'-':(signed?'+':'')):(q.neg?' -':' +'))+q.txt).join('');
+  if(notes.length)out+=' '+notes.join(' ');
+  return out;
+}
+/* → {ok:true,text} | {ok:false,err}. signed=true добавляет «+» перед первым слагаемым */
+function evalFormula(src,signed){
+  const text=String(src==null?'':src);
+  if(!text.trim())return {ok:true,text:''};
+  try{
+    const tk=fTokens(text);
+    if(!tk.toks.length)return {ok:true,text:tk.notes.join(' ')};
+    return {ok:true,text:fFormat(fParse(tk.toks),!!signed,tk.notes)};
+  }catch(e){return {ok:false,err:e.message}}
+}
+const specText=v=>{const r=evalFormula(v,true);return r.ok?r.text:normSpec(v)};
+/* ============================================================
+   Значения прямо в тексте: рядом со словами «мод силы», «бонус мастерства» и т.п.
+   появляется рамка с текущим значением. Чтобы править текст, на него нажимают.
+   ============================================================ */
+const LINK_RULES=(()=>{
+  const WB='(?![а-яa-z0-9])',R=src=>new RegExp(src,'y'),MOD='мод(?:ификатор[а-я]*|\\.)?\\s*',list=[];
+  list.push([R(MOD+'(?:заклинани[а-я]*|заклинательн[а-я]*\\s*характеристик[а-я]*)'),()=>fmt(mod(abil($('spellAbility').value)))]);
+  list.push([R('(?:бонус\\s*)?атак[а-я]*\\s*заклинани[а-я]*'),()=>fmt(parseInt($('spellAttack').value,10)||0)]);
+  list.push([R('пассивн[а-я]*\\s*внимательн[а-я]*'),()=>String(Number($('passive').value)||0)]);
+  Object.keys(ABIL_PAT).forEach(id=>list.push([R(MOD+'(?:характеристики\\s*)?(?:'+ABIL_PAT[id]+')'+WB),()=>fmt(mod(abil(id)))]));
+  list.push([R('бонус\\s*(?:мастерств[а-я]*|владени[а-я]*)'+WB),()=>fmt(num('prof'))]);
+  return list;
+})();
+/* Кости в тексте: 1к6, 2к8+3, 1d10, к20 — подсвечиваются цветом */
+const DICE_RE=/(?:\d*[кkdд]\d+)(?:[+\-−–]\d+)?(?![а-яa-z0-9])/y;
+const DICE_QUICK=/\d*[кkdд]\d/;
+const NUM_RE=/[+\-−–]?\d+(?:[.,]\d+)?/y;   // числа в тексте: 30, +3, -2, 1,5
+const HAS_DIGIT=/\d/;
+/* Делит текст на куски: обычный текст, кости и «рамки» со значениями. null — если искать нечего. */
+function linkSegments(text){
+  const t=text.toLowerCase().replace(/ё/g,'е');
+  if(t.length!==text.length||(t.indexOf('мод')<0&&t.indexOf('бонус')<0&&t.indexOf('пассивн')<0&&t.indexOf('атак')<0&&!DICE_QUICK.test(t)&&!HAS_DIGIT.test(t)))return null;
+  const segs=[];let last=0,i=0,found=false;
+  while(i<t.length){
+    if(i>0&&/[a-zа-я0-9]/.test(t.charAt(i-1))){i++;continue}      // только с начала слова
+    DICE_RE.lastIndex=i;const dm=DICE_RE.exec(t);
+    if(dm&&dm[0].length){const end=i+dm[0].length;segs.push({t:'text',v:text.slice(last,i)},{t:'dice',v:text.slice(i,end)});last=end;i=end;found=true;continue}
+    let hit=null;
+    for(let k=0;k<LINK_RULES.length&&!hit;k++){const re=LINK_RULES[k][0];re.lastIndex=i;const m=re.exec(t);if(m&&m[0].length)hit={len:m[0].length,fn:LINK_RULES[k][1]}}
+    if(hit){const end=i+hit.len;segs.push({t:'text',v:text.slice(last,end)},{t:'chip',v:hit.fn()});last=end;i=end;found=true}
+    else{
+      NUM_RE.lastIndex=i;const nm=NUM_RE.exec(t);
+      if(nm&&nm[0].length&&/\d/.test(nm[0])){const end=i+nm[0].length;segs.push({t:'text',v:text.slice(last,i)},{t:'num',v:text.slice(i,end)});last=end;i=end;found=true}
+      else i++;
+    }
+  }
+  if(!found)return null;
+  segs.push({t:'text',v:text.slice(last)});
+  return segs;
+}
+/* Рамки значений поверх форматированного текста: слова остаются, рядом появляется рамка с числом.
+   Пока поле не редактируется, показывается «чип-версия»; нажатие переносит курсор в то же место текста. */
+function rtLinkify(box){
+  const c=rtSanitize(box),tw=document.createTreeWalker(c,NodeFilter.SHOW_TEXT),nodes=[];
+  let found=false;
+  while(tw.nextNode())nodes.push(tw.currentNode);
+  nodes.forEach(n=>{
+    const segs=linkSegments(n.data);if(!segs)return;
+    found=true;
+    const f=document.createDocumentFragment();
+    segs.forEach(x=>{
+      if(x.t==='text'){if(x.v)f.appendChild(document.createTextNode(x.v))}
+      else if(x.t==='dice'){const d=document.createElement('span');d.className='dice';d.textContent=x.v;f.appendChild(d)}
+      else if(x.t==='num'){const n2=document.createElement('span');n2.className='num';n2.textContent=x.v;f.appendChild(n2)}
+      else{const ch=document.createElement('span');ch.className='chip';ch.textContent=x.v;f.appendChild(ch)}
+    });
+    n.parentNode.replaceChild(f,n);
+  });
+  return found?c:null;
+}
+function refreshRich(ta,forced){
+  if(ta.tagName!=='RT-BOX'||ta.hasAttribute('data-single'))return;
+  const editing=!forced&&document.activeElement===ta;
+  let r=ta._rich;
+  if(editing){if(r)r.hidden=true;ta.classList.remove('rich-on');return}
+  const c=linkSegments(ta.textContent)?rtLinkify(ta):null;
+  if(!c){if(r){r.remove();ta._rich=null}ta.classList.remove('rich-on');return}
+  if(!r||!r.isConnected){
+    r=document.createElement('div');r.className='rich';r.tabIndex=0;
+    r.setAttribute('role','textbox');r.setAttribute('aria-multiline','true');r.setAttribute('aria-label','Текст со значениями — нажми, чтобы изменить');
+    r.style.minHeight=window.getComputedStyle(ta).minHeight;
+    ta.parentNode.insertBefore(r,ta.nextSibling);ta._rich=r;r._ta=ta;r._sig=null;
+  }
+  const sig=c.innerHTML;
+  if(r._sig!==sig){r.textContent='';r.append(...Array.from(c.childNodes));r._sig=sig}
+  r.hidden=false;ta.classList.add('rich-on');
+}
+const refreshAllRich=()=>document.querySelectorAll('rt-box').forEach(t=>refreshRich(t));
+
+/* Позиция курсора при переходе к редактированию: символы считаются без рамок */
+function rtIndexAt(root,node,off){
+  const rg=document.createRange();rg.setStart(root,0);rg.setEnd(node,off);
+  const d=document.createElement('div');d.appendChild(rg.cloneContents());
+  d.querySelectorAll('.chip').forEach(x=>x.remove());
+  return d.textContent.length;
+}
+let lastPoint=null;
+document.addEventListener('pointerdown',e=>{
+  const r=e.target.closest&&e.target.closest('.rich');
+  if(!r){lastPoint=null;return}
+  let idx=null;
+  try{
+    let g=null;
+    if(document.caretRangeFromPoint)g=document.caretRangeFromPoint(e.clientX,e.clientY);
+    else if(document.caretPositionFromPoint){const q=document.caretPositionFromPoint(e.clientX,e.clientY);if(q)g={startContainer:q.offsetNode,startOffset:q.offset}}
+    if(g&&r.contains(g.startContainer))idx=rtIndexAt(r,g.startContainer,g.startOffset);
+  }catch(err){}
+  lastPoint={r:r,idx:idx,t:Date.now()};
+},true);
+function activateRich(r){
+  const ta=r._ta;if(!ta)return;
+  r.hidden=true;ta.classList.remove('rich-on');
+  ta.focus();
+  let pos=Infinity;
+  if(lastPoint&&lastPoint.r===r&&lastPoint.idx!=null&&Date.now()-lastPoint.t<1500)pos=lastPoint.idx;
+  rtSetCaret(ta,pos);
+  lastPoint=null;
+}
+document.addEventListener('focusin',e=>{if(e.target.classList&&e.target.classList.contains('rich'))activateRich(e.target)});
+document.addEventListener('click',e=>{const r=e.target.closest&&e.target.closest('.rich');if(r&&!r.hidden)activateRich(r)});
+document.addEventListener('focusout',e=>{
+  const box=e.target;if(box.tagName!=='RT-BOX')return;
+  setTimeout(()=>{
+    if(rtLock||document.activeElement===box)return;      // окно выбора цвета временно забирает фокус
+    refreshRich(box,true);
+  },0);
+});
+
+const proficiencyForLevel=l=>Math.ceil(clamp(Math.round(Number(l))||1,1,20)/4)+1;
+function recalc(){
+  const p=num('prof');
+  ABILITIES.forEach(([id],k)=>{const m=mod(abil(id));$('mod-'+id).textContent=fmt(m);$('mod-'+id).classList.toggle('neg',m<0);$('saveval-'+id).textContent=fmt(m+(saveRefs[k].cb.checked?p:0));});
+  // Навыки не зависят от характеристик: только владение (+бонус мастерства) и компетентность (+ещё раз)
+  const skillBonus=r=>(r.prof.checked?p:0)+(r.prof.checked&&r.exp.checked?p:0);
+  SKILLS.forEach((_,i)=>{$('skillval-'+i).textContent=fmt(skillBonus(skillRefs[i]))});
+  $('passive').value=10+mod(abil('wis'))+skillBonus(skillRefs[PERCEPTION]);
+  $('spellAttack').value=fmt(mod(abil($('spellAbility').value))+p);
+  const hm=num('hpMax'),hn=num('hpNow'),hr=hm>0?hn/hm:1,hp=$('hpNow');
+  hp.classList.toggle('hp-low',hm>0&&hr<=.25);hp.classList.toggle('hp-mid',hm>0&&hr>.25&&hr<=.5);hp.classList.toggle('hp-ok',hm>0&&hr>.5);
+  for(let l=1;l<=9;l++){const t=num('slotTotal'+l),r=num('slotLeft'+l),sl=$('slotTotal'+l).closest('.slot');sl.classList.toggle('slot-off',t===0);sl.classList.toggle('slot-empty',t>0&&r===0)}
+  S.weapons.forEach((w,i)=>{
+    const m=mod(abil(w.ability)),atk=$('w-atk-'+i);if(!atk)return;
+    atk.textContent=fmt(m+(w.prof?p:0));
+    const die=w.die||'—',specTxt=w.special?specText(w.spec):'',profVal=w.prof?p:0,profIn=w.prof&&w.profDmg?p:0;
+    $('w-b-die-'+i).textContent=die;
+    $('w-b-ml-'+i).textContent='Модификатор ('+ABILITIES.find(a=>a[0]===w.ability)[1]+')';
+    $('w-b-mod-'+i).textContent=fmt(m);
+    const spEl=$('w-b-spec-'+i);if(spEl)spEl.textContent=specTxt||'—';   // блока может не быть, пока список не перерисован
+    $('w-b-prof-'+i).textContent=fmt(profVal);$('w-b-prof-'+i).style.opacity=w.profDmg?'1':'.45';
+    $('w-dmg-'+i).textContent=die+(m!==0?' '+fmt(m):'')+(specTxt?' '+specTxt:'')+(profIn?' '+fmt(profIn):'');
+    $('w-pill-'+i).textContent=['Атака '+fmt(m+(w.prof?p:0)),rtPlain(w.type),rtPlain(w.range)].filter(Boolean).join(' · ');
+  });
+  refreshAllRich();
+}
+
+/* ============================================================
+   Обработчики событий
+   ============================================================ */
+/* «Следящие» поля: если текущее значение было равно прежнему максимуму, оно двигается вместе с ним */
+const FOLLOW={hpMax:'hpNow'};for(let l=1;l<=9;l++)FOLLOW['slotTotal'+l]='slotLeft'+l;
+const prevMax={};
+const rememberMax=()=>Object.keys(FOLLOW).forEach(id=>prevMax[id]=Number($(id).value)||0);
+function followMax(el){
+  const target=FOLLOW[el.id];if(!target)return;
+  const val=Math.max(0,Number(el.value)||0),cur=$(target);
+  if((Number(cur.value)||0)===prevMax[el.id])cur.value=val;
+  prevMax[el.id]=val;
+}
+function syncListItem(el){
+  if(el.dataset.list==='inventory'){const it=invGet(el.dataset.i),k=el.dataset.k;if(it&&k)it[k]=el.value;return}
+  const arr=S[el.dataset.list],i=Number(el.dataset.i),k=el.dataset.k;
+  if(!arr||!(i in arr))return;
+  const item=arr[i];
+  if(item&&typeof item==='object'&&el.dataset.list==='weapons'&&(k==='n'||k==='f'||k==='fsel')){
+    if(k==='fsel'){                                   // выбор граней: готовое число или «Своя…»
+      if(el.value==='custom')item.custom=true;
+      else{item.custom=false;item.f=Number(el.value)}
+    }else{
+      const v=parseInt(el.value,10);if(!(v>=1))return;  // пустое поле пока не трогаем
+      item[k]=Math.min(v,k==='n'?99:1000);
+    }
+    item.die=dieText(item);return;
+  }
+  let v=el.type==='checkbox'?el.checked:el.value;
+  if(k==='level')v=Number(v);
+  if(k===undefined)arr[i]=v;else item[k]=v;
+}
+function normalizeOnChange(el){
+  const id=el.id;
+  if(id==='level'){el.value=clamp(Math.round(Number(el.value))||1,1,20);$('prof').value=proficiencyForLevel(el.value);}
+  else if(id==='prof'){el.value=clamp(Math.round(Number(el.value))||0,0,20);}
+  else if(id==='hpTemp'){el.value=Math.max(0,Math.round(Number(el.value))||0);}
+  else if(id==='hpNow'||id==='hpMax'){
+    const max=Math.max(0,num('hpMax'));let now=Math.max(0,num('hpNow'));
+    if(max>0&&now>max)now=max;$('hpMax').value=max;$('hpNow').value=now;
+  }
+  else if(ABILITIES.some(a=>a[0]===id)){el.value=clamp(Math.round(Number(el.value))||10,1,30);if(id==='dex')$('initiativeBonus').value=mod(num('dex'));}
+  else if(/^slot(Total|Left)\d$/.test(id)){
+    const l=id.slice(-1),total=Math.max(0,Math.round(num('slotTotal'+l))),left=Math.max(0,Math.round(num('slotLeft'+l)));
+    $('slotTotal'+l).value=total;$('slotLeft'+l).value=Math.min(left,total);
+  }
+}
+function onEdit(e){
+  const el=e.target;
+  if(!(el instanceof HTMLElement)||el.type==='file'||(el.closest&&el.closest('.modal')))return;
+  if(el.tagName==='TEXTAREA')autosize(el);
+  if(el.dataset.list)syncListItem(el);
+  else if(el.dataset.kind==='exp'&&el.checked)skillRefs[el.dataset.skill].prof.checked=true;      // компетентность требует владения
+  else if(el.dataset.kind==='prof'&&!el.checked)skillRefs[el.dataset.skill].exp.checked=false;
+  if(el.dataset.list==='inventory'&&el.dataset.k==='desc'){const r=el.closest('.inv-item'),t=rtPlain(el.value).trim(),it=invGet(el.dataset.i);r.querySelector(':scope>.inv-body>.inv-prev').innerHTML=t?rtToHTML(el.value):'';r.querySelector(':scope>.inv-main .inv-note').classList.toggle('has',!!t||!!(it&&it.items&&it.items.length))}
+  if(el.dataset.list==='spells'&&el.dataset.k==='name'){const t=el.closest('.spell-card').querySelector('.card-title');if(t)t.textContent=rtPlain(el.value)||'Без названия'}
+  if(e.type==='input'){
+    if(el.id==='dex')$('initiativeBonus').value=mod(abil('dex'));
+    else if(el.id==='level'){const l=Number(el.value);if(Number.isInteger(l)&&l>=1&&l<=20)$('prof').value=proficiencyForLevel(l);}
+    followMax(el);
+  }
+  if(e.type==='change'&&el.dataset.list==='weapons'){
+    const k=el.dataset.k,w=S.weapons[el.dataset.i];
+    if(w&&k==='special'){
+      renderWeapons();recalc();
+      focusEl(document.querySelector(`[data-list="weapons"][data-i="${el.dataset.i}"][data-k="${w.special?'spec':'special'}"]`));
+    }else if(w&&k==='fsel'){
+      renderWeapons();
+      focusEl(document.querySelector(`[data-list="weapons"][data-i="${el.dataset.i}"][data-k="${w.custom?'f':'fsel'}"]`));
+    }else if(w&&(k==='n'||k==='f')){
+      el.value=w[k];                                  // пустое/неверное значение возвращаем к последнему допустимому
+      if(k==='f'&&w.f<2){w.f=2;el.value=2;w.die=dieText(w)}
+    }
+  }
+  if(e.type==='change'&&el.dataset.list==='spells'&&el.dataset.k==='level'){
+    renderSpells();focusEl(document.querySelector(`select[data-list="spells"][data-i="${el.dataset.i}"][data-k="level"]`));
+  }
+  if(el.dataset.list==='summons'){
+    const k=el.dataset.k,it=S.summons[el.dataset.i],isAb=ABILITIES.some(a=>a[0]===k);
+    if(it&&isAb){
+      if(e.type==='change'){const v=clamp(Math.round(Number(el.value))||10,1,30);el.value=v;it[k]=String(v)}
+      const m=el.closest('.s-stat').querySelector('.mod'),v=sMod(el.value);m.textContent=fmt(v);m.classList.toggle('neg',v<0);
+    }else if(it&&e.type==='change'&&(k==='hp'||k==='hpMax')){
+      const max=Math.max(0,Math.round(Number(it.hpMax)||0));let hp=Math.max(0,Math.round(Number(it.hp)||0));
+      if(max>0&&hp>max)hp=max;
+      it.hpMax=String(max);it.hp=String(hp);
+      const c=el.closest('.summon-card');c.querySelector('[data-k="hpMax"]').value=max;c.querySelector('[data-k="hp"]').value=hp;
+    }else if(it&&e.type==='change'&&(k==='ac')){const v=Math.max(0,Math.round(Number(el.value))||0);el.value=v;it.ac=String(v)}
+  }
+  if(el.id==='name'&&!S.titleEdited)$('sheetTitle').textContent=rtPlain(el.value).trim()||DEFAULT_TITLE;
+  if(e.type==='change')normalizeOnChange(el);
+  recalc();scheduleSave();
+}
+document.addEventListener('input',onEdit);
+document.addEventListener('change',onEdit);
+
+// Маркеры списка: новая строка в «Владениях» и «Языках» начинается с «• »
+const BULLET='• ';
+function bulletList(el){
+  const fire=()=>el.dispatchEvent(new Event('input',{bubbles:true}));
+  const lineBeforeCaret=()=>{
+    const sel=window.getSelection();if(!sel.rangeCount)return '';
+    const pre=document.createRange();pre.setStart(el,0);pre.setEnd(sel.anchorNode,sel.anchorOffset);
+    const d=document.createElement('div');d.appendChild(pre.cloneContents());
+    const t=rtText(d);return t.slice(t.lastIndexOf('\n')+1);
+  };
+  const onEnter=()=>{
+    const sel=window.getSelection();
+    if(!sel.isCollapsed)document.execCommand('delete');
+    const line=lineBeforeCaret();
+    if(line.trim()==='•'){for(let k=0;k<line.length;k++)document.execCommand('delete')}      // Enter на пустом маркере — закончить список
+    else{document.execCommand('insertLineBreak');document.execCommand('insertText',false,BULLET)}
+  };
+  el.addEventListener('focus',()=>{if(el.value.trim()===''){el.value=BULLET;rtSetCaret(el,Infinity);fire()}});
+  el.addEventListener('blur',()=>{if(el.value.trim()==='•'){el.value='';fire()}});
+  el.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();onEnter()}});
+  el.addEventListener('beforeinput',e=>{if(e.inputType==='insertParagraph'){e.preventDefault();onEnter()}});
+}
+bulletList($('proficienciesText'));bulletList($('languagesText'));
+
+// Редактируемый заголовок: без переносов строк и без вставки форматирования
+for(const id of ['sheetTitle','sheetSubtitle']){
+  const el=$(id);
+  el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();el.blur()}});
+  el.addEventListener('paste',e=>{e.preventDefault();const t=(e.clipboardData||window.clipboardData).getData('text').replace(/\s+/g,' ');document.execCommand('insertText',false,t)});
+  el.addEventListener('input',()=>{if(id==='sheetTitle')S.titleEdited=true;scheduleSave()});
+  el.addEventListener('blur',()=>{if(!el.textContent.trim())el.textContent=id==='sheetTitle'?DEFAULT_TITLE:DEFAULT_SUBTITLE;});
+}
+
+// Изображение: уменьшаем перед сохранением, чтобы не переполнять localStorage
+$('characterImage').addEventListener('change',function(){
+  const file=this.files&&this.files[0];this.value='';
+  if(!file||!file.type.startsWith('image/'))return;
+  const url=URL.createObjectURL(file),img=new Image();
+  img.onload=()=>{
+    const r=Math.min(1,900/Math.max(img.width,img.height)),c=document.createElement('canvas');
+    c.width=Math.max(1,Math.round(img.width*r));c.height=Math.max(1,Math.round(img.height*r));
+    const ctx=c.getContext('2d');ctx.fillStyle='#0c1118';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(img,0,0,c.width,c.height);
+    URL.revokeObjectURL(url);S.image=c.toDataURL('image/jpeg',.85);showImage();saveNow();
+  };
+  img.onerror=()=>{URL.revokeObjectURL(url);setStatus('Не удалось загрузить изображение')};
+  img.src=url;
+});
+
+/* Перетаскивание предметов: зажать предмет и перенести на другой — он ляжет внутрь; на свободное место — вернётся на верхний уровень */
+(()=>{
+  const list=$('inventoryList'),HOLD=350,SLOP=8;
+  let st=null,lastDrag=0,raf=0;
+  const contains=(a,b)=>!!(a.items||[]).some(x=>x===b||contains(x,b));
+  function clear(){
+    if(!st)return;
+    clearTimeout(st.timer);cancelAnimationFrame(raf);
+    st.el.classList.remove('dragging');
+    list.querySelectorAll('.drop-target').forEach(n=>n.classList.remove('drop-target'));
+    list.classList.remove('drop-root');
+    document.body.classList.remove('inv-dragging');
+    if(st.ghost)st.ghost.remove();
+    st=null;
+  }
+  function start(){
+    st.active=true;st.timer=0;
+    const it=invGet(st.path);
+    st.ghost=document.createElement('div');st.ghost.className='inv-ghost';
+    st.ghost.textContent=((it&&rtPlain(it.name))||'Предмет')+((it&&it.qty)?' ×'+it.qty:'');
+    document.body.appendChild(st.ghost);
+    st.el.classList.add('dragging');document.body.classList.add('inv-dragging');
+    if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();
+    const sel=window.getSelection&&window.getSelection();if(sel)sel.removeAllRanges();
+    if(navigator.vibrate)try{navigator.vibrate(15)}catch(e){}
+    update();tick();
+  }
+  function update(){
+    st.ghost.style.transform=`translate(${st.x+14}px,${st.y+14}px)`;
+    const el=document.elementFromPoint(st.x,st.y),host=el&&el.closest('.inv-item');
+    let tgt=null,root=false;
+    if(host){
+      const parentEl=st.el.parentElement.closest('.inv-item');
+      if(!st.el.contains(host)&&host!==parentEl)tgt=host;
+    }else if(el&&el.closest('[data-az="static:inventory"]')){
+      root=!!st.el.parentElement.closest('.inv-item');           // уже на верхнем уровне — ничего не делаем
+    }
+    if(st.tgt!==tgt){if(st.tgt)st.tgt.classList.remove('drop-target');if(tgt)tgt.classList.add('drop-target')}
+    list.classList.toggle('drop-root',root);
+    st.tgt=tgt;st.root=root;
+  }
+  function tick(){                                               // автопрокрутка у краёв экрана
+    if(!st||!st.active)return;
+    const edge=70,h=window.innerHeight;let dy=0;
+    if(st.y<edge)dy=-Math.ceil((edge-st.y)/5);else if(st.y>h-edge)dy=Math.ceil((st.y-(h-edge))/5);
+    if(dy){window.scrollBy(0,dy);update()}
+    raf=requestAnimationFrame(tick);
+  }
+  function drop(){
+    const from=st.path,to=st.tgt?st.tgt.dataset.path:null,toRoot=st.root;
+    clear();
+    if(to==null&&!toRoot)return;
+    const it=invGet(from),dest=to==null?null:invGet(to);
+    if(!it||(to!=null&&(!dest||dest===it||contains(it,dest))))return;
+    const{arr,idx}=invParent(from);arr.splice(idx,1);
+    if(dest){(dest.items=dest.items||[]).push(it);dest.open=true}else S.inventory.push(it);
+    renderInventory();saveNow();
+  }
+  list.addEventListener('pointerdown',e=>{
+    if(st||(e.pointerType==='mouse'&&e.button!==0))return;
+    const host=e.target.closest('.inv-item');if(!host||e.target.closest('button'))return;
+    const main=e.target.closest('.inv-main');
+    if(!(e.target===host||(main&&main.parentElement===host)))return;
+    st={el:host,path:host.dataset.path,pid:e.pointerId,x0:e.clientX,y0:e.clientY,x:e.clientX,y:e.clientY,active:false,tgt:null,root:false,
+        timer:setTimeout(start,HOLD)};
+  });
+  document.addEventListener('pointermove',e=>{
+    if(!st||e.pointerId!==st.pid)return;
+    st.x=e.clientX;st.y=e.clientY;
+    if(!st.active){if(Math.hypot(st.x-st.x0,st.y-st.y0)>SLOP)clear();return}
+    update();
+  });
+  document.addEventListener('pointerup',e=>{
+    if(!st||e.pointerId!==st.pid)return;
+    if(st.active){lastDrag=Date.now();drop()}else clear();
+  });
+  document.addEventListener('pointercancel',e=>{if(st&&e.pointerId===st.pid)clear()});
+  document.addEventListener('touchmove',e=>{if(st&&st.active&&e.cancelable)e.preventDefault()},{passive:false});
+  document.addEventListener('contextmenu',e=>{if(st)e.preventDefault()});
+  document.addEventListener('selectstart',e=>{if(st&&st.active)e.preventDefault()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&st)clear()});
+  document.addEventListener('click',e=>{if(Date.now()-lastDrag<400){e.stopPropagation();e.preventDefault()}},true);
+})();
+
+// Вкладки (каждая группа изолирована)
+document.addEventListener('click',e=>{
+  const btn=e.target.closest('.tab-btn');if(!btn)return;
+  const group=btn.closest('.tab-group');if(!group)return;
+  group.querySelectorAll(':scope > .tabs > .tab-btn').forEach(b=>b.classList.toggle('active',b===btn));
+  group.querySelectorAll(':scope > .tab-pane').forEach(p=>p.classList.toggle('active',p.id===btn.dataset.tab));
+  autosizeAll();
+});
+
+// Кнопки действий
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;
+  switch(b.dataset.act){
+    case 'new-char':createCharacter();break;
+    case 'delete-char':deleteCharacter();break;
+    case 'toggle-theme':toggleTheme();break;
+    case 'add-weapon':addTo('weapons',newWeapon());break;
+    case 'add-summon':addTo('summons',newSummon());break;
+    case 'add-feature':addTo('features',{name:'',description:'',images:[]});break;
+    case 'add-trait':addTo('traits',{name:'',text:'',images:[]});break;
+    case 'add-item':addTo('inventory',{name:'Новый предмет',qty:'',desc:'',open:false,items:[]});break;
+    case 'inv-toggle':{const it=invGet(b.dataset.i);if(!it)break;
+      it.open=!it.open;const row=b.closest('.inv-item');row.classList.toggle('open',it.open);
+      b.setAttribute('aria-expanded',String(it.open));
+      if(it.open){autosizeAll();const ta=row.querySelector(':scope>.inv-body>rt-box');if(ta)ta.focus()}
+      scheduleSave();break}
+    case 'add-cantrip':addTo('spells',newSpell('cantrip'));break;
+    case 'add-spell':addTo('spells',newSpell('spell'));break;
+    case 'remove':removeFrom(b.dataset.list,b.dataset.list==='inventory'?b.dataset.i:Number(b.dataset.i));break;
+    case 'img-add':pendingAz=(zoneOf(b)||{dataset:{}}).dataset.az||null;filePicker.click();break;
+    case 'img-del':{const az=(zoneOf(b)||{dataset:{}}).dataset.az,arr=az&&zoneImages(az);if(arr){arr.splice(Number(b.dataset.j),1);fillAttach();saveNow()}break}
+    case 'remove-image':S.image='';showImage();saveNow();break;
+    case 'save':saveNow();break;
+    case 'export':exportBackup();break;
+    case 'import':importPicker.click();break;
+    case 'print':window.print();break;
+    case 'reset':resetSheet();break;
+    case 'fold-card':foldCard(b);break;
+    case 'fold-all':case 'unfold-all':{
+      const pane=document.querySelector('#mainTabs > .tab-pane.active');
+      if(pane)pane.querySelectorAll('section.panel').forEach(p=>{if(p.dataset.fold)setFold(p,b.dataset.act==='fold-all')});
+      saveFold();if(b.dataset.act==='unfold-all')autosizeAll();break}
+  }
+});
+
+/* ============================================================
+   Вложения: скриншоты и изображения (вставка Ctrl+V, перетаскивание, выбор файла)
+   ============================================================ */
+const MAX_SIDE=1200,JPEG_Q=.8;
+const zoneOf=n=>n&&n.closest?n.closest('[data-az]'):null;
+function zoneImages(az){
+  const [t,k]=String(az).split(':');
+  if(t==='static')return (S.attach[k]=S.attach[k]||[]);
+  const it=(S[t]||[])[Number(k)];
+  return it&&typeof it==='object'?(it.images=it.images||[]):null;
+}
+function attachHTML(imgs){
+  return `<div class="thumbs">${imgs.map((src,j)=>`<figure class="thumb"><img src="${src}" alt="Вложение ${j+1}"><button type="button" class="thumb-del" data-act="img-del" data-j="${j}" aria-label="Удалить изображение">×</button></figure>`).join('')}</div><button type="button" class="attach-add" data-act="img-add" title="Можно вставить из буфера (Ctrl+V) или перетащить файл сюда">+ Скриншот / изображение</button>`;
+}
+/* Текстовые поля сами растут под текст — без внутренней прокрутки */
+function autosize(el){
+  if(!el||el.offsetHeight===0)return;          // скрытая вкладка: подгоним, когда её откроют
+  const y=window.scrollY;
+  el.style.height='auto';
+  el.style.height=(el.scrollHeight+el.offsetHeight-el.clientHeight)+'px';
+  if(window.scrollY!==y)window.scrollTo(0,y);
+}
+const autosizeAll=()=>document.querySelectorAll('textarea').forEach(autosize);
+let resizeTimer=null;
+window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(autosizeAll,120)});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(autosizeAll);
+
+function fillAttach(){
+  document.querySelectorAll('[data-az]').forEach(z=>{
+    let box=[...z.children].find(c=>c.classList.contains('attach'));
+    if(!box){box=document.createElement('div');box.className='attach';z.appendChild(box)}
+    box.innerHTML=attachHTML(zoneImages(z.dataset.az)||[]);
+  });
+  autosizeAll();
+}
+// После каждой перерисовки списка карточек заново заполняем их галереи
+{const r1=renderWeapons,r2=renderFeatures,r3=renderTraits,r4=renderSpells,r5=renderSummons;
+ renderWeapons=()=>{r1();fillAttach()};renderFeatures=()=>{r2();fillAttach()};renderTraits=()=>{r3();fillAttach()};renderSpells=()=>{r4();fillAttach()};renderSummons=()=>{r5();fillAttach()};}
+
+function compress(file){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file),img=new Image();
+    img.onload=()=>{
+      const r=Math.min(1,MAX_SIDE/Math.max(img.width,img.height)),c=document.createElement('canvas');
+      c.width=Math.max(1,Math.round(img.width*r));c.height=Math.max(1,Math.round(img.height*r));
+      const ctx=c.getContext('2d');ctx.fillStyle='#0c1118';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(img,0,0,c.width,c.height);
+      URL.revokeObjectURL(url);resolve(c.toDataURL('image/jpeg',JPEG_Q));
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('bad image'))};
+    img.src=url;
+  });
+}
+async function addImages(az,files){
+  const list=[...files].filter(f=>f&&f.type&&f.type.startsWith('image/'));if(!list.length)return;
+  const added=[];
+  for(const f of list){try{added.push(await compress(f))}catch(e){setStatus('Не удалось загрузить изображение')}}
+  const arr=zoneImages(az);if(!arr||!added.length)return;
+  arr.push(...added);fillAttach();
+  if(!saveNow()){                       // не хватило места — откатываем, чтобы не потерять изображение после перезагрузки
+    arr.splice(arr.length-added.length,added.length);fillAttach();
+    await notify('Недостаточно места','Не хватает места в хранилище браузера — изображение не добавлено. Удали ненужные изображения и попробуй снова.');
+  }
+}
+const filePicker=document.createElement('input');
+filePicker.type='file';filePicker.accept='image/*';filePicker.multiple=true;filePicker.className='vh';document.body.appendChild(filePicker);
+let pendingAz=null;
+filePicker.addEventListener('change',()=>{const az=pendingAz,files=Array.from(filePicker.files||[]);pendingAz=null;filePicker.value='';if(az&&files.length)addImages(az,files)});
+
+document.addEventListener('paste',e=>{
+  const files=Array.from((e.clipboardData&&e.clipboardData.items)||[]).filter(it=>it.kind==='file'&&it.type.startsWith('image/')).map(it=>it.getAsFile()).filter(Boolean);
+  const z=zoneOf(e.target);if(!files.length||!z)return;
+  e.preventDefault();addImages(z.dataset.az,files);
+});
+document.addEventListener('dragover',e=>{if(e.dataTransfer&&[...e.dataTransfer.types].includes('Files'))e.preventDefault()});
+document.addEventListener('drop',e=>{
+  const files=Array.from((e.dataTransfer&&e.dataTransfer.files)||[]);if(!files.length)return;
+  e.preventDefault();                   // не даём браузеру открыть файл вместо вставки
+  const z=zoneOf(e.target);if(z)addImages(z.dataset.az,files);
+});
+const lightbox=$('lightbox');
+document.addEventListener('click',e=>{
+  const im=e.target.closest&&e.target.closest('.thumb img');
+  if(im){lightbox.querySelector('img').src=im.src;lightbox.classList.add('open');return}
+  if(lightbox.classList.contains('open'))lightbox.classList.remove('open');
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')lightbox.classList.remove('open')});
+
+/* ============================================================
+   Резервная копия (файл .json) — для iPhone и переноса между устройствами
+   ============================================================ */
+const readFileText=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result));r.onerror=()=>rej(r.error);r.readAsText(f)});
+function downloadText(name,text){
+  const url=URL.createObjectURL(new Blob([text],{type:'application/json'})),a=document.createElement('a');
+  a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();
+  setTimeout(()=>{a.remove();URL.revokeObjectURL(url)},5000);
+}
+function exportBackup(){
+  saveNow();
+  const data={app:'dnd-character-sheet',version:7,exportedAt:new Date().toISOString(),
+    characters:collection.characters.map(c=>({name:c.name,state:c.id===loadedId?collectState():(readState(c.id)||blankState(c.name))}))};
+  const d=new Date(),pad=n=>('0'+n).slice(-2);
+  downloadText('dnd-sheets-'+d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'.json',JSON.stringify(data));
+  setStatus('Резервная копия подготовлена — проверь загрузки или приложение «Файлы»');
+}
+async function importBackup(file){
+  const bad=()=>notify('Не удалось загрузить','Это не похоже на резервную копию листа персонажа.');
+  let data;
+  try{data=JSON.parse(await readFileText(file))}catch(e){await bad();return}
+  const list=data&&Array.isArray(data.characters)?data.characters:(data&&data.state?[data]:null);
+  if(!list||!list.length){await bad();return}
+  saveNow();
+  const used=new Set(collection.characters.map(c=>c.id));let last=null,count=0;
+  list.forEach(item=>{
+    if(!item||!item.state||typeof item.state!=='object')return;
+    const st=normalize(item.state),id=makeId(used);used.add(id);
+    if(!store.set(stateKey(id),JSON.stringify(st)))return;
+    const name=String(item.name||'').trim()||String(st.fields.name||'').trim()||'Загруженный персонаж';
+    collection.characters.push({id,name,cls:String(st.fields.className||'').trim()});last=id;count++;
+  });
+  if(!count){await bad();return}
+  collection.activeId=last;loadActive();
+  await notify('Готово','Загружено листов: '+count+'. Они добавлены к уже существующим.');
+}
+const importPicker=document.createElement('input');
+importPicker.type='file';importPicker.accept='.json,application/json,text/plain';importPicker.className='vh';document.body.appendChild(importPicker);
+importPicker.addEventListener('change',()=>{const f=importPicker.files&&importPicker.files[0];importPicker.value='';if(f)importBackup(f)});
+if(!storageOk)$('storageWarn').hidden=false;
+
+// Сохранение при закрытии/сворачивании — всегда в тот лист, что сейчас открыт
+/* ============================================================
+   Сворачивание окон (состояние хранится отдельно от листов, в этом же браузере)
+   ============================================================ */
+const FOLD_KEY='dndUiFoldV1';
+const foldState=store.json(FOLD_KEY)||{};
+function saveFold(){store.set(FOLD_KEY,JSON.stringify(foldState))}
+function setFold(p,v){
+  p.classList.toggle('collapsed',v);
+  p.querySelector(':scope > h2').setAttribute('aria-expanded',String(!v));
+  if(v)foldState[p.dataset.fold]=1;else delete foldState[p.dataset.fold];
+}
+document.querySelectorAll('main section.panel').forEach(p=>{
+  const h=p.querySelector(':scope > h2');if(!h)return;
+  p.dataset.fold=h.textContent.trim();
+  h.classList.add('fold-head');h.tabIndex=0;h.setAttribute('role','button');
+  h.insertAdjacentHTML('beforeend','<span class="fold-arrow" aria-hidden="true">▾</span>');
+  setFold(p,!!foldState[p.dataset.fold]);
+});
+document.addEventListener('click',e=>{
+  const h=e.target.closest('.fold-head');if(!h)return;
+  const p=h.parentElement;setFold(p,!p.classList.contains('collapsed'));saveFold();
+  if(!p.classList.contains('collapsed'))autosizeAll();
+});
+document.addEventListener('keydown',e=>{
+  const t=e.target;
+  if((e.key==='Enter'||e.key===' ')&&t.classList&&t.classList.contains('fold-head')){e.preventDefault();t.click()}
+});
+function foldCard(b){
+  const it=(S[b.dataset.list]||[])[Number(b.dataset.i)];if(!it)return;
+  it.c=!it.c;
+  const card=b.closest('.weapon,.spell-card,.summon-card');if(card)card.classList.toggle('folded',it.c);
+  b.setAttribute('aria-expanded',String(!it.c));
+  if(!it.c)autosizeAll();
+  scheduleSave();
+}
+// При печати раскрываем всё, потом возвращаем как было
+let printFolded=[];
+window.addEventListener('beforeprint',()=>{
+  printFolded=[...document.querySelectorAll('.collapsed,.folded')].map(n=>[n,n.classList.contains('collapsed')?'collapsed':'folded']);
+  printFolded.forEach(([n,c])=>n.classList.remove(c));
+});
+window.addEventListener('afterprint',()=>{printFolded.forEach(([n,c])=>n.classList.add(c));printFolded=[]});
+
+window.addEventListener('pagehide',saveNow);
+window.addEventListener('beforeunload',saveNow);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow()});
+
+/* ============================================================
+   Старт
+   ============================================================ */
+loadActive();
+</script>
+</body>
+</html>
