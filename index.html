@@ -340,9 +340,25 @@ details.help code{padding:1px 6px;font-size:12px;color:var(--gold);background:va
 .s-stat input::-webkit-inner-spin-button,.s-stat input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .s-stat input:focus{box-shadow:none;background:var(--gold-bg)}
 .s-stat .mod{min-width:0;padding:0 8px;font-size:12px}
+.weapon.dragging,.spell-card.dragging,.feature-card.dragging,.summon-card.dragging{opacity:.35}
+.drop-before{box-shadow:0 -3px 0 var(--gold)!important}
+.drop-after{box-shadow:0 3px 0 var(--gold)!important}
 @media(max-width:860px){.summon-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.s-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
 .theme-btn{flex:none;align-self:flex-start;padding:3px 10px;font-size:12px;line-height:1.5;border-radius:999px;white-space:nowrap}
+
+#modalText{white-space:pre-line}
+.thumb.dragging{opacity:.35}
+.thumb img{-webkit-touch-callout:none;-webkit-user-drag:none;user-select:none;-webkit-user-select:none}
+.inv-ghost img{display:block;max-width:120px;max-height:90px;border-radius:6px}
+.weapon.drop-target,.spell-card.drop-target,.feature-card.drop-target,.summon-card.drop-target{border-color:var(--gold);box-shadow:0 0 0 2px rgba(212,179,122,.35)}
+.panel.drop-root,.panel.drop-target,.tab-pane.drop-target{outline:2px dashed var(--gold-dim);outline-offset:4px;border-radius:12px}
+.inv-body .attach{margin-top:8px}
+.rest-actions{margin-top:14px}
+.rest-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin-top:10px}
+.rest-row .rest-label{font-size:13px;color:var(--muted)}
+.mini-btn{padding:4px 12px;font-size:13px}
+.feature-card.spent>:not(.rest-row){opacity:.5}
 
 /* Светлая тема (только на экране — печать остаётся как была) */
 @media screen{
@@ -378,6 +394,19 @@ html[data-theme="light"] .modal{background:rgba(40,30,15,.55)}
   .inv-prev:empty{display:none!important}
   .inv-inside{background:#fff}
 }
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{font:inherit;color:inherit;display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border:1px solid var(--line-strong);border-radius:20px;font-size:13px;cursor:pointer;user-select:none}
+.chip.on{background:var(--red-bg);border-color:var(--red-line);color:var(--red)}.chip input{display:none}
+.charge-row input[type=number]{width:64px}.charge-row select{width:auto}
+.att-cb{margin-right:6px}#attCount.bad{color:var(--red)}
+#saveBadge{position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:50;padding:5px 12px;font-size:12px;border-radius:20px;background:var(--surface2);border:1px solid var(--line-strong);color:var(--muted);pointer-events:none}
+#saveBadge.ok{color:var(--ok)}#saveBadge.wait{color:var(--warn)}#saveBadge.err{color:var(--red);border-color:var(--red-line)}
+.hist-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}
+.spell-filter{display:flex;gap:8px;margin-bottom:10px}.spell-filter select{width:auto;padding:6px 30px 6px 10px;font-size:13px}
+@media print{#saveBadge{display:none}
+body.pc{font-size:11px}body.pc .tabs,body.pc .inv-body,body.pc .attach,body.pc .hero-img,body.pc [data-az="static:history"],body.pc [data-az="static:appearance"],body.pc #descriptionTabs>h2,body.pc .help,body.pc .spell-filter,body.pc [data-az="static:notes"],body.pc [data-az="static:spellnotes"]{display:none!important}
+body.pc .panel{padding:8px;break-inside:avoid}body.pc .grid{gap:8px}body.pc h2{margin-bottom:8px;font-size:15px}body.pc rt-box{min-height:0}body.pc header{padding:8px 0}}
+@media print{#storageUsed{display:none}}
 </style>
 </head>
 <body>
@@ -402,6 +431,7 @@ html[data-theme="light"] .modal{background:rgba(40,30,15,.55)}
   </div>
 </div></nav>
 
+<div id="saveBadge" class="ok">✓ Сохранено</div>
 <main class="wrap"><div class="tab-group" id="mainTabs">
 <div class="tabs" role="tablist"><button class="tab-btn active" type="button" data-tab="characterPane">Лист персонажа</button><button class="tab-btn" type="button" data-tab="spellsPane">Заклинания и заговоры</button></div>
 <div class="fold-tools"><button type="button" data-act="fold-all">Свернуть все окна</button><button type="button" data-act="unfold-all">Развернуть все</button></div>
@@ -411,8 +441,10 @@ html[data-theme="light"] .modal{background:rgba(40,30,15,.55)}
 <div class="fields">
 <div class="field"><label for="name">Имя персонажа</label><rt-box id="name" data-single data-ph="Имя персонажа" contenteditable="true"></rt-box></div>
 <div class="field"><label for="className">Класс</label><rt-box id="className" data-single data-ph="Класс" contenteditable="true"></rt-box></div>
+<div class="field"><label for="subclass">Подкласс</label><rt-box id="subclass" data-single data-ph="Например: Домен Света" contenteditable="true"></rt-box></div>
 <div class="field"><label for="race">Раса</label><rt-box id="race" data-single data-ph="Раса персонажа" contenteditable="true"></rt-box></div>
 <div class="field"><label for="alignment">Мировоззрение</label><rt-box id="alignment" data-single data-ph="Например: Хаотично-добрый" contenteditable="true"></rt-box></div>
+<div class="field"><label for="age">Возраст</label><input type="number" id="age" placeholder="Возраст"></div>
 <div class="field"><label for="level">Уровень</label><input type="number" id="level" min="1" max="20" value="1"></div>
 <div class="field"><label for="prof">Бонус мастерства</label><input type="number" id="prof" min="0" max="20" value="2"></div>
 <div class="field"><label for="initiativeBonus">Бонус инициативы</label><input id="initiativeBonus" type="number" value="0"></div>
@@ -424,10 +456,16 @@ html[data-theme="light"] .modal{background:rgba(40,30,15,.55)}
 <div class="field"><label for="hpTemp">Временные хиты</label><input type="number" id="hpTemp" min="0" value="0"></div>
 <div class="field"><label for="ac">Класс доспеха (КД)</label><input type="number" id="ac" min="0" value="10"></div>
 <div class="field"><label for="speed">Скорость, футы</label><input type="number" id="speed" min="0" value="30"></div>
-<div class="field"><label for="age">Возраст</label><input type="number" id="age" placeholder="Возраст"></div>
+<div class="field"><label for="acMode">Подсчёт КД</label><select id="acMode"><option value="manual">Вручную</option><option value="auto">Автоматически</option></select></div>
 </div>
+<div class="fields auto-ac" id="acRow" hidden><div class="field" style="grid-column:1/-1"><label for="acArmor">Доспех</label><select id="acArmor"><option value="none">Без доспеха (10 + Лов)</option><option value="barb">Без доспеха: варвар (10 + Лов + Тел)</option><option value="monk">Без доспеха: монах (10 + Лов + Мдр)</option><option value="padded">Стёганый (11 + Лов)</option><option value="leather">Кожаный (11 + Лов)</option><option value="studded">Проклёпанный кожаный (12 + Лов)</option><option value="hide">Шкурный (12 + Лов, макс. 2)</option><option value="chainshirt">Кольчужная рубаха (13 + Лов, макс. 2)</option><option value="scale">Чешуйчатый (14 + Лов, макс. 2)</option><option value="breast">Кираса (14 + Лов, макс. 2)</option><option value="halfplate">Полулаты (15 + Лов, макс. 2)</option><option value="ring">Кольчатый (14)</option><option value="chain">Кольчуга (16)</option><option value="splint">Колечный/пластинчатый (17)</option><option value="plate">Латы (18)</option></select></div><div class="field"><label for="acShield">Щит</label><select id="acShield"><option value="0">Нет</option><option value="2">Есть (+2)</option></select></div><div class="field"><label for="acBonus">Прочие бонусы к КД</label><input type="number" id="acBonus" value="0"></div></div>
+<div class="row actions rest-actions"><button type="button" data-act="short-rest">Короткий отдых</button><button type="button" data-act="long-rest">Длительный отдых</button></div>
 </section>
 
+<section class="panel span-12" data-az="static:conditions"><h2>Состояния</h2>
+<div class="fields" style="margin-bottom:14px"><div class="field"><label for="inspiration">Вдохновение</label><select id="inspiration"><option value="0">Нет</option><option value="1">Вдохновение мастера ✦</option><option value="2">Вдохновение барда ✦</option></select></div>
+<div class="field"><label for="exhaustion">Истощение</label><select id="exhaustion"><option value="0">0 — нет</option><option value="1">1 — помеха при проверках характеристик</option><option value="2">2 — скорость вдвое меньше</option><option value="3">3 — помеха при атаках и спасбросках</option><option value="4">4 — максимум хитов вдвое меньше</option><option value="5">5 — скорость 0</option><option value="6">6 — смерть</option></select></div></div>
+<input type="hidden" id="conditions" value=""><div class="chips" id="condChips"><button type="button" class="chip" data-cond="Ослеплён" title="Не видит, провал проверок зрения; атаки по нему с преимуществом, его атаки с помехой." aria-pressed="false">Ослеплён</button><button type="button" class="chip" data-cond="Очарован" title="Не может атаковать очаровавшего; тот выигрывает в социальных проверках." aria-pressed="false">Очарован</button><button type="button" class="chip" data-cond="Оглушён" title="Не слышит; провал проверок слуха." aria-pressed="false">Оглушён</button><button type="button" class="chip" data-cond="Истощён" title="См. уровни истощения ниже." aria-pressed="false">Истощён</button><button type="button" class="chip" data-cond="Испуган" title="Помеха при проверках и атаках, пока виден источник страха; не может приближаться к нему." aria-pressed="false">Испуган</button><button type="button" class="chip" data-cond="Схвачен" title="Скорость 0." aria-pressed="false">Схвачен</button><button type="button" class="chip" data-cond="Недееспособен" title="Не может совершать действия и реакции." aria-pressed="false">Недееспособен</button><button type="button" class="chip" data-cond="Невидим" title="Атаки по нему с помехой, его атаки с преимуществом." aria-pressed="false">Невидим</button><button type="button" class="chip" data-cond="Парализован" title="Недееспособен, провал СИЛ и ЛОВ; рукопашные попадания — критические." aria-pressed="false">Парализован</button><button type="button" class="chip" data-cond="Окаменён" title="Превращён в камень, недееспособен, сопротивление всему урону." aria-pressed="false">Окаменён</button><button type="button" class="chip" data-cond="Отравлен" title="Помеха при атаках и проверках характеристик." aria-pressed="false">Отравлен</button><button type="button" class="chip" data-cond="Сбит с ног" title="Помеха при атаках; вблизи по нему атаки с преимуществом." aria-pressed="false">Сбит с ног</button><button type="button" class="chip" data-cond="Опутан" title="Скорость 0, помеха при атаках; по нему атаки с преимуществом." aria-pressed="false">Опутан</button><button type="button" class="chip" data-cond="Ошеломлён" title="Недееспособен, провал СИЛ и ЛОВ; по нему атаки с преимуществом." aria-pressed="false">Ошеломлён</button><button type="button" class="chip" data-cond="Без сознания" title="Недееспособен, падает; рукопашные попадания — критические." aria-pressed="false">Без сознания</button></div><div id="condInfo" class="muted" style="margin-top:12px"></div><div class="row actions"><button type="button" class="danger" data-act="reset-cond">Сбросить состояния</button></div></section>
 <section class="panel span-12" data-az="static:stats"><h2>Характеристики</h2><div class="stats" id="stats"></div></section>
 <section class="panel span-6" data-az="static:saves"><h2>Спасброски</h2><div class="list" id="saves"></div></section>
 <section class="panel span-6" data-az="static:skills"><h2>Навыки</h2><div class="list" id="skills"></div></section>
@@ -437,7 +475,7 @@ html[data-theme="light"] .modal{background:rgba(40,30,15,.55)}
 <div><h3>Владения</h3><rt-box id="proficienciesText" data-rows="4" data-ph="Оружие, доспехи, инструменты и другие владения" contenteditable="true"></rt-box></div>
 <div><h3>Языки</h3><rt-box id="languagesText" data-rows="4" data-ph="Языки персонажа" contenteditable="true"></rt-box></div></div></section>
 <section class="panel span-12" data-az="static:weapons"><h2>Оружие</h2><div id="weapons"></div><div class="row actions"><button class="primary" type="button" data-act="add-weapon">+ Добавить оружие</button></div></section>
-<section class="panel span-12" data-az="static:inventory"><h2>Инвентарь</h2><div class="section-note">Нажми ✎ — описание и содержимое предмета. Зажми и перетащи предмет, чтобы положить его в другой.</div>
+<section class="panel span-12" data-az="static:inventory"><h2>Инвентарь</h2><div class="section-note">Нажми ✎ — описание и содержимое предмета. Зажми и перетащи предмет, чтобы положить его в другой. Кружок слева от количества — «настроено» (максимум 3). <b id="attCount"></b></div>
 <div class="panel" style="margin-bottom:12px"><h3>Монеты</h3><div class="coin-grid">
 <div class="field"><label for="coinsPlatinum">Платиновые монеты (пм)</label><input id="coinsPlatinum" type="number" min="0" value="0"></div>
 <div class="field"><label for="coinsGold">Золотые монеты (зм)</label><input id="coinsGold" type="number" min="0" value="0"></div>
@@ -446,6 +484,7 @@ html[data-theme="light"] .modal{background:rgba(40,30,15,.55)}
 <div id="inventoryList" class="inventory-list"></div><div class="row actions"><button class="primary" type="button" data-act="add-item">+ Добавить предмет</button></div></section>
 <section class="panel span-12" data-az="static:summons"><h2>Саммоны и спутники</h2><div id="summons"></div><div class="row actions"><button class="primary" type="button" data-act="add-summon">+ Добавить саммона</button></div></section>
 
+<section class="panel span-12" data-az="static:personality"><h2>Личность</h2><div class="two"><div><h3>Черты характера</h3><rt-box id="persTraits" data-rows="3" data-ph="Как персонаж держится и ведёт себя" contenteditable="true"></rt-box></div><div><h3>Идеалы</h3><rt-box id="persIdeals" data-rows="3" data-ph="Во что он верит" contenteditable="true"></rt-box></div></div><div class="two" style="margin-top:14px"><div><h3>Привязанности</h3><rt-box id="persBonds" data-rows="3" data-ph="Люди, места, обязательства" contenteditable="true"></rt-box></div><div><h3>Слабости</h3><rt-box id="persFlaws" data-rows="3" data-ph="Пороки, страхи, уязвимости" contenteditable="true"></rt-box></div></div></section>
 <section class="panel span-12 tab-group" id="descriptionTabs"><h2>История и описание персонажа</h2>
 <div class="tabs" role="tablist"><button class="tab-btn active" type="button" data-tab="historyPane">Полная предыстория</button><button class="tab-btn" type="button" data-tab="appearancePane">Внешность</button></div>
 <div id="historyPane" class="tab-pane active" data-az="static:history"><label class="small-label" for="historyText">Предыстория персонажа — можно редактировать</label><rt-box id="historyText" data-rows="18" contenteditable="true"></rt-box></div>
@@ -457,8 +496,9 @@ html[data-theme="light"] .modal{background:rgba(40,30,15,.55)}
 
 <section class="panel span-12" data-az="static:notes"><h2>Краткие заметки о персонаже</h2><rt-box id="notes" data-rows="5" contenteditable="true"></rt-box></section>
 <section class="panel span-12"><h2>Сохранение</h2>
-<div class="row actions" style="margin-top:0"><button class="primary" type="button" data-act="save">Сохранить изменения</button><button type="button" data-act="export">Скачать резервную копию</button><button type="button" data-act="import">Загрузить из копии</button><button type="button" data-act="print">Печать / PDF</button><button class="danger" type="button" data-act="reset">Сбросить лист</button></div>
+<div class="row actions" style="margin-top:0"><button class="primary" type="button" data-act="save">Сохранить изменения</button><button type="button" data-act="export">Скачать резервную копию</button><button type="button" data-act="import">Загрузить из копии</button><button type="button" data-act="print">Печать / PDF</button><button type="button" data-act="print-compact">Печатная версия (компактная)</button><button class="danger" type="button" data-act="reset">Сбросить лист</button></div>
 <div id="saveStatus" class="footer-note" role="status" aria-live="polite">Сохраняется автоматически.</div>
+<details class="help" id="histBox"><summary>История изменений (текущий сеанс)</summary><div id="histList" class="muted"></div></details>
 <details class="help"><summary>Значения в тексте и формулы — как пользоваться</summary>
 <p><b>Форматирование текста.</b> Нажми на любое текстовое поле — внизу экрана появится панель: <b>Ж</b> жирный, <i>К</i> наклон, <u>Ч</u> подчёркивание, <s>З</s> зачёркивание, шрифт, размер, цвет текста, цветное выделение, выравнивание, верхний и нижний индекс, «Сброс» и отмена/повтор. Выдели слова и нажми нужную кнопку; без выделения форматирование применится к тому, что напечатаешь дальше. Горячие клавиши: Ctrl+B, Ctrl+I, Ctrl+U, Ctrl+Z.</p>
 <p><b>Значения прямо в тексте.</b> В любом большом текстовом поле (заметки, описания, история и т.д.) напиши «мод силы», «модификатор ловкости» (так же телосложения, интеллекта, мудрости, харизмы), «бонус мастерства», «мод заклинаний», «бонус атаки заклинанием» или «пассивная внимательность» — рядом со словами появится рамка с текущим значением. Она меняется вместе с листом. Чтобы поправить текст, просто нажми на него — рамки видны, когда поле не редактируется.</p>
@@ -479,13 +519,15 @@ html[data-theme="light"] .modal{background:rgba(40,30,15,.55)}
 <section class="panel span-12" data-az="static:magic"><h2>Магия персонажа</h2><div class="fields" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
 <div class="field"><label for="spellAbility">Основная характеристика заклинаний</label><select id="spellAbility"><option value="int">Интеллект</option><option value="wis">Мудрость</option><option value="cha">Харизма</option></select></div>
 <div class="field"><label for="spellAttack">Бонус атаки заклинанием</label><input id="spellAttack" readonly value="+2"></div>
+<div class="field"><label for="spellDC">СЛ спасброска заклинаний</label><input id="spellDC" readonly value="10"></div>
+
 </div></section>
-<section class="panel span-12" data-az="static:slots"><h2>Ячейки заклинаний</h2><div class="slot-grid" id="spellSlots"></div></section>
-<section class="panel span-12" data-az="static:cantrips"><h2>Заговоры</h2><div id="cantripsList"></div><div class="row actions"><button class="primary" type="button" data-act="add-cantrip">+ Добавить заговор</button></div></section>
-<section class="panel span-12" data-az="static:spells"><h2>Заклинания</h2><div id="spellsList"></div><div class="row actions"><button class="primary" type="button" data-act="add-spell">+ Добавить заклинание</button></div></section>
+<section class="panel span-12" data-az="static:slots"><h2>Ячейки заклинаний</h2><div class="fields" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:14px"><div class="field"><label for="slotRest">Ячейки восстанавливаются</label><select id="slotRest"><option value="long">После длительного отдыха</option><option value="short">После короткого отдыха (колдун)</option></select></div></div><div class="slot-grid" id="spellSlots"></div></section>
+<section class="panel span-12" data-az="static:cantrips"><h2>Заговоры</h2><div class="spell-filter"><select data-sf="flag" data-sk="cantrip"><option value="">Все</option><option value="concentration">Концентрация</option><option value="ritual">Ритуалы</option></select></div><div id="cantripsList"></div><div class="row actions"><button class="primary" type="button" data-act="add-cantrip">+ Добавить заговор</button></div></section>
+<section class="panel span-12" data-az="static:spells"><h2>Заклинания</h2><div class="spell-filter"><select data-sf="flag" data-sk="spell"><option value="">Все</option><option value="prepared">Подготовленные</option><option value="concentration">Концентрация</option><option value="ritual">Ритуалы</option></select><select data-sf="level" data-sk="spell"><option value="">Любой уровень</option><option value="1">1-й</option><option value="2">2-й</option><option value="3">3-й</option><option value="4">4-й</option><option value="5">5-й</option><option value="6">6-й</option><option value="7">7-й</option><option value="8">8-й</option><option value="9">9-й</option></select></div><div id="spellsList"></div><div class="row actions"><button class="primary" type="button" data-act="add-spell">+ Добавить заклинание</button></div></section>
 <section class="panel span-12" data-az="static:spellnotes"><h2>Заметки о магии</h2><rt-box id="spellNotes" data-rows="5" data-ph="Источник магии, фокусировка, особенности и другие заметки" contenteditable="true"></rt-box></section>
 </div></div>
-</div></main>
+</div><div id="storageUsed" class="footer-note" style="text-align:center;margin-top:28px"></div></main>
 
 <div id="modal" class="modal" hidden><div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><h3 id="modalTitle"></h3><p id="modalText" class="muted"></p><input id="modalInput" autocomplete="off" hidden><div class="row actions"><button type="button" id="modalCancel">Отмена</button><button type="button" id="modalOk" class="primary">ОК</button></div></div></div>
 <div id="lightbox" role="dialog" aria-modal="true" aria-label="Просмотр изображения"><img alt=""></div>
@@ -974,8 +1016,8 @@ let loadedId=null;           // id листа, чьё содержимое се�
 function normInv(a,depth=0){
   if(!Array.isArray(a)||depth>20)return [];
   return a.map(it=>(it&&typeof it==='object')
-    ?{name:String(it.name||''),qty:String(it.qty==null?'':it.qty),desc:String(it.desc||''),open:!!it.open,items:normInv(it.items,depth+1)}
-    :{name:String(it==null?'':it),qty:'',desc:'',open:false,items:[]});
+    ?{name:String(it.name||''),qty:String(it.qty==null?'':it.qty),desc:String(it.desc||''),open:!!it.open,att:!!it.att,items:normInv(it.items,depth+1),images:cleanImgs(it.images)}
+    :{name:String(it==null?'':it),qty:'',desc:'',open:false,items:[],images:[]});
 }
 function normalize(o){
   const s=blankState(typeof o.title==='string'&&o.title?o.title:DEFAULT_TITLE);
@@ -989,8 +1031,10 @@ function normalize(o){
   const oldTrait=String(s.fields.characterTrait||'').trim();
   if(!s.traits.length&&oldTrait)s.traits=[{name:'',text:oldTrait,images:[]}];
   delete s.fields.characterTrait;
-  if(Array.isArray(o.features))s.features=o.features.map(f=>({name:String((f&&f.name)||''),description:String((f&&f.description)||''),images:cleanImgs(f&&f.images)}));
+  if(Array.isArray(o.features))s.features=o.features.map(f=>({name:String((f&&f.name)||''),description:String((f&&f.description)||''),images:cleanImgs(f&&f.images),needShort:!!(f&&f.needShort),needLong:!!(f&&f.needLong),chMax:Math.max(0,parseInt(f&&f.chMax)||0),chLeft:Math.max(0,parseInt(f&&f.chLeft)||0),chRest:['short','long','dawn'].includes(f&&f.chRest)?f.chRest:''}));
   if(Array.isArray(o.spells))s.spells=o.spells.map(sp=>{const x={...newSpell((sp&&sp.kind)==='cantrip'?'cantrip':'spell'),...sp};x.images=cleanImgs(x.images);return x});
+  if(!o.spellsOrdered)s.spells.sort((a,b)=>(Number(a.level)||0)-(Number(b.level)||0));   // один раз: порядок как был (по уровню), дальше — ручной
+  s.spellsOrdered=true;
   if(Array.isArray(o.summons))s.summons=o.summons.map(x=>{const r=newSummon();if(x&&typeof x==='object'){for(const k of Object.keys(r)){if(k==='images'||k==='c')continue;if(x[k]!==undefined&&x[k]!==null)r[k]=String(x[k])}r.c=!!x.c;r.images=cleanImgs(x.images)}return r});
   if(o.attach&&typeof o.attach==='object')for(const k of Object.keys(o.attach))s.attach[k]=cleanImgs(o.attach[k]);
   if(typeof o.subtitle==='string')s.subtitle=o.subtitle;
@@ -1023,7 +1067,7 @@ function collectState(){
   const fields={};FIELDS.forEach(el=>fields[el.id]=el.value);
   const skills={};skillRefs.forEach((r,i)=>{if(r.prof.checked)skills[SKILLS[i][0]]={prof:true,exp:r.exp.checked}});
   return {v:7,fields,saves:saveRefs.filter(r=>r.cb.checked).map(r=>r.id),skills,
-    weapons:S.weapons,inventory:S.inventory,features:S.features,traits:S.traits,attach:nonEmptyAttach(),spells:S.spells,summons:S.summons,
+    weapons:S.weapons,inventory:S.inventory,features:S.features,traits:S.traits,attach:nonEmptyAttach(),spells:S.spells,summons:S.summons,spellsOrdered:true,
     title:rtSerialize($('sheetTitle')),subtitle:rtSerialize($('sheetSubtitle')),titleEdited:S.titleEdited,image:S.image};
 }
 
@@ -1077,7 +1121,7 @@ function persistCollection(){
   if(!ok)setStatus('Не удалось сохранить: возможно, хранилище браузера переполнено');
   return ok;
 }
-function setStatus(t){const el=$('saveStatus');if(el)el.textContent=t}
+function setStatus(t){const el=$('saveStatus');if(el)el.textContent=t;const b=$('saveBadge');if(b){const e=/Не удалось|недоступна/.test(t),w=/^Сохранение/.test(t);b.className=e?'err':w?'wait':'ok';b.textContent=e?'⚠ Не сохранено':w?'● Сохранение…':'✓ Сохранено'}if(!/^Сохранение/.test(t))updateUsage()}
 
 function displayName(index){
   const n=rtPlain($('name').value).trim();if(n)return n;
@@ -1092,14 +1136,14 @@ function saveNow(){
   clearTimeout(saveTimer);saveTimer=null;
   const c=collection.characters.find(x=>x.id===loadedId);if(!c)return false;
   c.name=displayName(collection.characters.indexOf(c));c.cls=rtPlain($('className').value).trim();
-  const ok=store.set(stateKey(c.id),JSON.stringify(collectState()));
+  const snap=JSON.stringify(collectState());const ok=store.set(stateKey(c.id),snap);histPush(snap);
   persistCollection();updateMenu();
   setStatus(!ok?'Не удалось сохранить: возможно, хранилище браузера переполнено':storageOk?'Изменения сохранены автоматически':'Память браузера недоступна — скачай резервную копию внизу страницы');
   return ok;
 }
 function loadActive(){
   const c=activeCharacter();loadedId=c.id;collection.activeId=c.id;
-  applyState(readState(c.id)||blankState(c.name));
+  applyState(readState(c.id)||blankState(c.name));hist.length=0;histPush(JSON.stringify(collectState()),1);
   persistCollection();updateMenu();
 }
 
@@ -1121,7 +1165,7 @@ function showModal(o){
     const close=val=>{modal.hidden=true;modalClose=null;if(prev&&prev.focus&&document.contains(prev))prev.focus();resolve(val)};
     modalClose=()=>close(o.cancel===null?true:null);
     mOk.onclick=()=>close(o.input==null?true:mInput.value);
-    mCancel.onclick=()=>close(null);
+    mCancel.onclick=()=>close(o.cancelValue!==undefined?o.cancelValue:null);
     mInput.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();mOk.click()}};
     setTimeout(()=>{if(!mInput.hidden){mInput.focus();mInput.select()}else mOk.focus()},30);
   });
@@ -1129,6 +1173,32 @@ function showModal(o){
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modalClose)modalClose()});
 modal.addEventListener('click',e=>{if(e.target===modal&&modalClose)modalClose()});
 const notify=(title,text)=>showModal({title,text,cancel:null});
+
+/* Отдых по правилам D&D 5e */
+const restoreSlots=()=>{let any=false;for(let l=1;l<=9;l++){const t=Math.max(0,Math.round(num('slotTotal'+l)));if(Math.round(num('slotLeft'+l))<t)any=true;$('slotLeft'+l).value=t}return any};
+function finishRest(){renderFeatures();autosizeAll();recalc();rememberMax();saveNow()}
+async function shortRest(){
+  const v=await showModal({title:'Короткий отдых',text:'Сбросить умения, которым нужен короткий отдых?',ok:'Отдохнуть'});
+  if(v===null)return;
+  const lines=[];
+  const feats=S.features.filter(f=>f.needShort);feats.forEach(f=>{f.needShort=false});refill(['short']);
+  if(feats.length)lines.push(`Умения восстановлены: ${feats.length}.`);
+  if($('slotRest').value==='short'&&restoreSlots())lines.push('Ячейки заклинаний восстановлены.');
+  finishRest();
+  await notify('Короткий отдых завершён',lines.join('\n')||'Готово.');
+}
+async function longRest(){
+  const v=await showModal({title:'Длительный отдых',text:'Восстановить хиты, ячейки заклинаний и умения?',ok:'Отдохнуть'});
+  if(v===null)return;
+  const lines=[],maxHp=Math.max(0,Math.round(num('hpMax'))),hp=Math.max(0,Math.round(num('hpNow'))),temp=Math.max(0,Math.round(num('hpTemp')));
+  if(maxHp>0&&hp<maxHp){$('hpNow').value=maxHp;lines.push(`Хиты: ${hp} → ${maxHp}.`)}
+  if(temp>0){$('hpTemp').value=0;lines.push('Временные хиты исчезли.')}
+  if(restoreSlots())lines.push('Ячейки заклинаний восстановлены.');
+  const feats=S.features.filter(f=>f.needShort||f.needLong);feats.forEach(f=>{f.needShort=false;f.needLong=false});refill(['short','long','dawn']);
+  if(feats.length)lines.push(`Умения восстановлены: ${feats.length}.`);
+  finishRest();
+  await notify('Длительный отдых завершён',lines.join('\n')||'Всё и так было в порядке.');
+}
 
 async function createCharacter(){
   saveNow();
@@ -1221,7 +1291,7 @@ ${w.special?`<div class="part"><span class="pl">Особый урон</span><spa
 <div class="attach"></div><div class="card-foot"><button type="button" class="danger" data-act="remove" data-list="weapons" data-i="${i}">Удалить оружие</button></div></div>`).join('')||'<p class="empty">Оружие пока не добавлено.</p>';
 }
 function renderFeatures(){
-  $('characterFeatures').innerHTML=S.features.map((f,i)=>`<div class="feature-card" data-az="features:${i}"><div class="feature-top"><rt-box class="name-ta" data-single contenteditable="true" data-list="features" data-i="${i}" data-k="name" aria-label="Название особенности ${i+1}" data-ph="Название особенности">${rtToHTML(f.name)}</rt-box><button type="button" class="danger" data-act="remove" data-list="features" data-i="${i}">Удалить</button></div><rt-box contenteditable="true" data-rows="4" data-list="features" data-i="${i}" data-k="description" aria-label="Описание особенности ${i+1}" data-ph="Описание особенности...">${rtToHTML(f.description)}</rt-box></div>`).join('');
+  $('characterFeatures').innerHTML=S.features.map((f,i)=>`<div class="feature-card${f.needShort||f.needLong?' spent':''}" data-az="features:${i}"><div class="feature-top"><rt-box class="name-ta" data-single contenteditable="true" data-list="features" data-i="${i}" data-k="name" aria-label="Название особенности ${i+1}" data-ph="Название особенности">${rtToHTML(f.name)}</rt-box><button type="button" class="danger" data-act="remove" data-list="features" data-i="${i}">Удалить</button></div><rt-box contenteditable="true" data-rows="4" data-list="features" data-i="${i}" data-k="description" aria-label="Описание особенности ${i+1}" data-ph="Описание особенности...">${rtToHTML(f.description)}</rt-box><div class="rest-row"><span class="rest-label">Нужен отдых:</span><label class="checkline"><input type="checkbox" data-list="features" data-i="${i}" data-k="needShort" ${f.needShort?'checked':''}> короткий</label><label class="checkline"><input type="checkbox" data-list="features" data-i="${i}" data-k="needLong" ${f.needLong?'checked':''}> длительный</label><button type="button" class="mini-btn" data-act="reset-rest" data-i="${i}">Сбросить</button></div><div class="rest-row charge-row"><span class="rest-label">Заряды:</span><input type="number" min="0" data-list="features" data-i="${i}" data-k="chLeft" value="${f.chLeft||0}" aria-label="Осталось зарядов"> из <input type="number" min="0" data-list="features" data-i="${i}" data-k="chMax" value="${f.chMax||0}" aria-label="Всего зарядов"><select data-list="features" data-i="${i}" data-k="chRest" aria-label="Восстановление"><option value="">без восстановления</option><option value="short" ${f.chRest==='short'?'selected':''}>короткий отдых</option><option value="long" ${f.chRest==='long'?'selected':''}>длительный отдых</option><option value="dawn" ${f.chRest==='dawn'?'selected':''}>на рассвете (длительный)</option></select></div></div>`).join('');
 }
 function renderTraits(){
   $('characterTraits').innerHTML=S.traits.map((t,i)=>`<div class="feature-card" data-az="traits:${i}"><div class="feature-top"><rt-box class="name-ta" data-single contenteditable="true" data-list="traits" data-i="${i}" data-k="name" aria-label="Название черты ${i+1}" data-ph="Название черты">${rtToHTML(t.name)}</rt-box><button type="button" class="danger" data-act="remove" data-list="traits" data-i="${i}">Удалить</button></div><rt-box contenteditable="true" data-rows="3" data-list="traits" data-i="${i}" data-k="text" aria-label="Описание черты ${i+1}" data-ph="Опиши черту персонажа...">${rtToHTML(t.text)}</rt-box></div>`).join('');
@@ -1240,7 +1310,7 @@ function invParent(path){
 function invHTML(arr,base){
   return arr.map((it,i)=>{
     const p=base===''?String(i):base+'.'+i,d=`data-list="inventory" data-i="${p}"`,desc=rtPlain(it.desc||'').trim(),kids=it.items||[];
-    return `<div class="inv-item${it.open?' open':''}" data-path="${p}"><div class="inv-main"><rt-box class="name-ta" data-single contenteditable="true" ${d} data-k="name" aria-label="Предмет ${i+1}" data-ph="Название предмета">${rtToHTML(it.name)}</rt-box><input ${d} data-k="qty" class="inv-qty" inputmode="numeric" aria-label="Количество предмета ${i+1}" value="${esc(it.qty||'')}"><button type="button" class="inv-note${desc||kids.length?' has':''}" data-act="inv-toggle" data-i="${p}" aria-expanded="${!!it.open}" aria-label="Описание и содержимое предмета" title="Описание и содержимое">✎</button><button type="button" class="danger" data-act="remove" data-list="inventory" data-i="${p}" aria-label="Удалить предмет" title="Удалить">✕</button></div><div class="inv-body"><rt-box contenteditable="true" data-rows="2" ${d} data-k="desc" aria-label="Описание предмета ${i+1}" data-ph="Описание, свойства, вес, заметки...">${rtToHTML(it.desc)}</rt-box><div class="inv-prev">${desc?rtToHTML(it.desc):''}</div>${kids.length?`<div class="inv-inside"><div class="inv-inside-label">Внутри</div>${invHTML(kids,p)}</div>`:''}</div></div>`;
+    return `<div class="inv-item${it.open?' open':''}" data-path="${p}"><div class="inv-main"><rt-box class="name-ta" data-single contenteditable="true" ${d} data-k="name" aria-label="Предмет ${i+1}" data-ph="Название предмета">${rtToHTML(it.name)}</rt-box><input type="checkbox" ${d} data-k="att" class="att-cb" title="Настроено (магический предмет)" ${it.att?'checked':''}><input ${d} data-k="qty" class="inv-qty" inputmode="numeric" aria-label="Количество предмета ${i+1}" value="${esc(it.qty||'')}"><button type="button" class="inv-note${desc||kids.length||(it.images&&it.images.length)?' has':''}" data-act="inv-toggle" data-i="${p}" aria-expanded="${!!it.open}" aria-label="Описание и содержимое предмета" title="Описание и содержимое">✎</button><button type="button" class="danger" data-act="remove" data-list="inventory" data-i="${p}" aria-label="Удалить предмет" title="Удалить">✕</button></div><div class="inv-body" data-az="inventory:${p}"><rt-box contenteditable="true" data-rows="2" ${d} data-k="desc" aria-label="Описание предмета ${i+1}" data-ph="Описание, свойства, вес, заметки...">${rtToHTML(it.desc)}</rt-box><div class="inv-prev">${desc?rtToHTML(it.desc):''}</div>${kids.length?`<div class="inv-inside"><div class="inv-inside-label">Внутри</div>${invHTML(kids,p)}</div>`:''}</div></div>`;
   }).join('');
 }
 function renderInventory(){
@@ -1260,9 +1330,9 @@ function renderSpells(){
 <div class="row">${sp.kind==='cantrip'?'':`<label class="checkline"><input type="checkbox" ${d} data-k="prepared" ${sp.prepared?'checked':''}> Подготовлено</label>`}<label class="checkline"><input type="checkbox" ${d} data-k="concentration" ${sp.concentration?'checked':''}> Концентрация</label><label class="checkline"><input type="checkbox" ${d} data-k="ritual" ${sp.ritual?'checked':''}> Ритуал</label></div>
 <div class="field" style="margin-top:8px"><label>Описание / эффект</label><rt-box contenteditable="true" data-rows="3" ${d} data-k="description" aria-label="Описание заклинания" data-ph="Урон, спасбросок, эффект и другие заметки">${rtToHTML(sp.description)}</rt-box></div>
 <div class="attach"></div><div class="card-foot"><button type="button" class="danger" data-act="remove" data-list="spells" data-i="${i}">Удалить</button></div></div>`};
-  const part=(kind,emptyText)=>S.spells.map((sp,i)=>({sp,i})).filter(x=>x.sp.kind===kind).sort((a,b)=>a.sp.level-b.sp.level||a.i-b.i).map(x=>card(x.sp,x.i)).join('')||`<p class="empty">${emptyText}</p>`;
+  const part=(kind,emptyText)=>S.spells.map((sp,i)=>({sp,i})).filter(x=>x.sp.kind===kind).map(x=>card(x.sp,x.i)).join('')||`<p class="empty">${emptyText}</p>`;
   $('cantripsList').innerHTML=part('cantrip','Пока нет добавленных заговоров.');
-  $('spellsList').innerHTML=part('spell','Пока нет добавленных заклинаний.');
+  $('spellsList').innerHTML=part('spell','Пока нет добавленных заклинаний.');applySpellFilter();
 }
 function showImage(){
   const img=$('characterPreview');
@@ -1540,8 +1610,67 @@ document.addEventListener('focusout',e=>{
 });
 
 const proficiencyForLevel=l=>Math.ceil(clamp(Math.round(Number(l))||1,1,20)/4)+1;
+
+/* ===== Дополнения: КД, СЛ, состояния, настройка, заряды, фильтр, история ===== */
+const ARM={none:[10,99],barb:[10,99,'con'],monk:[10,99,'wis'],padded:[11,99],leather:[11,99],studded:[12,99],hide:[12,2],chainshirt:[13,2],scale:[14,2],breast:[14,2],halfplate:[15,2],ring:[14,0],chain:[16,0],splint:[17,0],plate:[18,0]};
+function extras(p){
+  $('spellDC').value=8+p+mod(abil($('spellAbility').value));
+  const auto=$('acMode').value==='auto',ac=$('ac');
+  document.querySelectorAll('.auto-ac').forEach(e=>e.hidden=!auto);
+  ac.readOnly=auto;
+  if(auto){const a=ARM[$('acArmor').value]||ARM.none,d=mod(abil('dex')),dx=a[1]===0?0:Math.min(d,a[1]);
+    const v=a[0]+dx+(a[2]?mod(abil(a[2])):0)+(+$('acShield').value||0)+(Math.round(num('acBonus'))||0);
+    if(ac.value!==String(v))ac.value=v;}
+  const on=($('conditions').value||'').split('|').filter(Boolean);
+  document.querySelectorAll('[data-cond]').forEach(c=>{const f=on.includes(c.dataset.cond);c.classList.toggle('on',f);c.setAttribute('aria-pressed',f)});
+  const ci=$('condInfo');if(ci)ci.innerHTML=on.length?on.map(n=>{const c=document.querySelector('[data-cond="'+n+'"]');return '<div><b>'+n+'</b> — '+(c?c.title:'')+'</div>'}).join(''):'Включённые состояния покажут здесь краткое напоминание.';
+  let n=0;(function w(a){a.forEach(i=>{if(i.att)n++;w(i.items||[])})})(S.inventory);
+  const el=$('attCount');if(el){el.textContent='Настроено: '+n+' из 3';el.classList.toggle('bad',n>3)}
+}
+document.addEventListener('click',e=>{
+  const c=e.target.closest&&e.target.closest('[data-cond]');if(!c)return;
+  const on=new Set(($('conditions').value||'').split('|').filter(Boolean));
+  on.has(c.dataset.cond)?on.delete(c.dataset.cond):on.add(c.dataset.cond);
+  $('conditions').value=[...on].join('|');$('conditions').dispatchEvent(new Event('input',{bubbles:true}));recalc();
+});
+function refill(kinds){let n=0;S.features.forEach(f=>{if(f.chMax>0&&kinds.includes(f.chRest)&&f.chLeft!==f.chMax){f.chLeft=f.chMax;n++}});if(n){renderFeatures();recalc();saveNow()}}
+function applySpellFilter(){
+  document.querySelectorAll('.spell-card[data-az^="spells:"]').forEach(c=>{
+    const sp=S.spells[+c.dataset.az.split(':')[1]];if(!sp)return;
+    const fl=document.querySelector('[data-sf="flag"][data-sk="'+sp.kind+'"]'),lv=document.querySelector('[data-sf="level"][data-sk="'+sp.kind+'"]');
+    c.hidden=!!((fl&&fl.value&&!sp[fl.value])||(lv&&lv.value!==''&&Number(sp.level)!==Number(lv.value)));
+  });
+}
+document.addEventListener('change',e=>{if(e.target.dataset&&e.target.dataset.sf)applySpellFilter()});
+window.addEventListener('afterprint',()=>document.body.classList.remove('pc'));
+/* История изменений: снимки в памяти, последние 25 */
+const hist=[];let histLast='';
+function histDiff(a,b){
+  try{const x=JSON.parse(a),y=JSON.parse(b),ch=[];
+    for(const k of new Set([...Object.keys(x.fields),...Object.keys(y.fields)]))if(x.fields[k]!==y.fields[k]){const l=document.querySelector('label[for="'+k+'"]');ch.push(l?l.textContent:k)}
+    for(const k of ['weapons','inventory','features','traits','spells','summons','saves','skills'])if(JSON.stringify(x[k])!==JSON.stringify(y[k]))ch.push({weapons:'оружие',inventory:'инвентарь',features:'умения',traits:'черты',spells:'заклинания',summons:'саммоны',saves:'спасброски',skills:'навыки'}[k]);
+    return ch.slice(0,3).join(', ')||'правка';}catch(e){return 'правка'}
+}
+function histPush(snap,init){
+  if(snap===histLast&&!init)return;
+  const label=init?'Состояние при открытии':histDiff(histLast,snap);
+  histLast=snap;hist.unshift({t:new Date(),snap,label});if(hist.length>25)hist.pop();histRender();
+}
+function histRender(){
+  const b=$('histList');if(!b)return;
+  b.innerHTML=hist.map((h,i)=>'<div class="hist-row"><span>'+h.t.toLocaleTimeString('ru-RU')+' — '+esc(h.label)+'</span>'+(i?'<button type="button" class="mini-btn" data-act="hist-restore" data-i="'+i+'">Вернуть</button>':'<span>сейчас</span>')+'</div>').join('')||'Пока пусто.';
+}
+function histRestore(i){const h=hist[i];if(!h)return;applyState(normalize(JSON.parse(h.snap)));saveNow()}
+
+function updateUsage(){
+  const el=$('storageUsed');if(!el)return;
+  try{let c=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);c+=k.length+(localStorage.getItem(k)||'').length}
+    const u=c/1048576;el.textContent='Использовано места: '+u.toFixed(2).replace('.',',')+' МБ из 5 МБ';el.style.color=u>=4?'var(--red)':u>=3?'var(--warn)':''}
+  catch(e){el.textContent='Использовано места: память браузера недоступна'}
+}
+updateUsage();
 function recalc(){
-  const p=num('prof');
+  const p=num('prof');extras(p);
   ABILITIES.forEach(([id],k)=>{const m=mod(abil(id));$('mod-'+id).textContent=fmt(m);$('mod-'+id).classList.toggle('neg',m<0);$('saveval-'+id).textContent=fmt(m+(saveRefs[k].cb.checked?p:0));});
   // Навыки не зависят от характеристик: только владение (+бонус мастерства) и компетентность (+ещё раз)
   const skillBonus=r=>(r.prof.checked?p:0)+(r.prof.checked&&r.exp.checked?p:0);
@@ -1580,7 +1709,7 @@ function followMax(el){
   prevMax[el.id]=val;
 }
 function syncListItem(el){
-  if(el.dataset.list==='inventory'){const it=invGet(el.dataset.i),k=el.dataset.k;if(it&&k)it[k]=el.value;return}
+  if(el.dataset.list==='inventory'){const it=invGet(el.dataset.i),k=el.dataset.k;if(it&&k)it[k]=el.type==='checkbox'?el.checked:el.value;return}
   const arr=S[el.dataset.list],i=Number(el.dataset.i),k=el.dataset.k;
   if(!arr||!(i in arr))return;
   const item=arr[i];
@@ -1642,6 +1771,9 @@ function onEdit(e){
   }
   if(e.type==='change'&&el.dataset.list==='spells'&&el.dataset.k==='level'){
     renderSpells();focusEl(document.querySelector(`select[data-list="spells"][data-i="${el.dataset.i}"][data-k="level"]`));
+  }
+  if(el.dataset.list==='features'&&(el.dataset.k==='needShort'||el.dataset.k==='needLong')){
+    const f=S.features[el.dataset.i];el.closest('.feature-card').classList.toggle('spent',!!(f&&(f.needShort||f.needLong)));
   }
   if(el.dataset.list==='summons'){
     const k=el.dataset.k,it=S.summons[el.dataset.i],isAb=ABILITIES.some(a=>a[0]===k);
@@ -1710,6 +1842,15 @@ $('characterImage').addEventListener('change',function(){
   img.src=url;
 });
 
+/* С какого места можно начинать «зажать и перетащить»: с любого. Исключение — поля ввода: мышью их не трогаем, а на экране — только если поле сейчас в фокусе (правка текста) */
+function holdAllowed(e){
+  const mouse=e.pointerType==='mouse';
+  const t=e.target.closest&&e.target.closest('rt-box,.rich,input,textarea,select,[contenteditable="true"]'+(mouse?',button,a,label.checkline':''));
+  if(!t)return true;
+  if(mouse)return false;
+  const ae=document.activeElement;
+  return !(ae&&(t===ae||t.contains(ae)||t._ta===ae));
+}
 /* Перетаскивание предметов: зажать предмет и перенести на другой — он ляжет внутрь; на свободное место — вернётся на верхний уровень */
 (()=>{
   const list=$('inventoryList'),HOLD=350,SLOP=8;
@@ -1770,10 +1911,180 @@ $('characterImage').addEventListener('change',function(){
   }
   list.addEventListener('pointerdown',e=>{
     if(st||(e.pointerType==='mouse'&&e.button!==0))return;
-    const host=e.target.closest('.inv-item');if(!host||e.target.closest('button'))return;
-    const main=e.target.closest('.inv-main');
-    if(!(e.target===host||(main&&main.parentElement===host)))return;
+    const host=e.target.closest('.inv-item');if(!host||e.target.closest('.thumb')||!holdAllowed(e))return;
     st={el:host,path:host.dataset.path,pid:e.pointerId,x0:e.clientX,y0:e.clientY,x:e.clientX,y:e.clientY,active:false,tgt:null,root:false,
+        timer:setTimeout(start,HOLD)};
+  });
+  document.addEventListener('pointermove',e=>{
+    if(!st||e.pointerId!==st.pid)return;
+    st.x=e.clientX;st.y=e.clientY;
+    if(!st.active){if(Math.hypot(st.x-st.x0,st.y-st.y0)>SLOP)clear();return}
+    update();
+  });
+  document.addEventListener('pointerup',e=>{
+    if(!st||e.pointerId!==st.pid)return;
+    if(st.active){lastDrag=Date.now();drop()}else clear();
+  });
+  document.addEventListener('pointercancel',e=>{if(st&&e.pointerId===st.pid)clear()});
+  document.addEventListener('touchmove',e=>{if(st&&st.active&&e.cancelable)e.preventDefault()},{passive:false});
+  document.addEventListener('contextmenu',e=>{if(st)e.preventDefault()});
+  document.addEventListener('selectstart',e=>{if(st&&st.active)e.preventDefault()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&st)clear()});
+  document.addEventListener('click',e=>{if(Date.now()-lastDrag<400){e.stopPropagation();e.preventDefault()}},true);
+})();
+
+/* Перетаскивание карточек (заговоры, заклинания, умения, черты, саммоны): зажать, перенести, отпустить — карточка встанет на новое место */
+(()=>{
+  const SEL='.weapon,.spell-card,.feature-card,.summon-card',GROUPS=['weapons','cantripsList','spellsList','characterFeatures','characterTraits','summons'];
+  const RENDER={weapons:()=>renderWeapons(),spells:()=>renderSpells(),features:()=>renderFeatures(),traits:()=>renderTraits(),summons:()=>renderSummons()};
+  const NAMES={weapons:'Оружие',spells:'Заклинание',features:'Умение',traits:'Черта',summons:'Саммон'};
+  const HOLD=350,SLOP=8;
+  const CHILD=SEL.split(',').map(x=>':scope>'+x).join(',');
+  let st=null,lastDrag=0,raf=0;
+  function mark(){if(!st)return;st.box.querySelectorAll('.drop-before,.drop-after').forEach(n=>n.classList.remove('drop-before','drop-after'))}
+  function clear(){
+    if(!st)return;
+    clearTimeout(st.timer);cancelAnimationFrame(raf);mark();
+    st.el.classList.remove('dragging');document.body.classList.remove('inv-dragging');
+    if(st.ghost)st.ghost.remove();
+    st=null;
+  }
+  function start(){
+    st.active=true;st.timer=0;
+    const it=S[st.list][st.idx];
+    st.ghost=document.createElement('div');st.ghost.className='inv-ghost';
+    st.ghost.textContent=(it&&rtPlain(it.name||'').trim())||NAMES[st.list];
+    document.body.appendChild(st.ghost);
+    st.el.classList.add('dragging');document.body.classList.add('inv-dragging');
+    if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();
+    const sel=window.getSelection&&window.getSelection();if(sel)sel.removeAllRanges();
+    if(navigator.vibrate)try{navigator.vibrate(15)}catch(e){}
+    update();tick();
+  }
+  function update(){
+    st.ghost.style.transform=`translate(${st.x+14}px,${st.y+14}px)`;
+    let tgt=null,pos=null;
+    const panel=st.box.closest('section.panel')||st.box,pr=panel.getBoundingClientRect(),er=st.el.getBoundingClientRect();
+    const inside=st.x>=pr.left&&st.x<=pr.right&&st.y>=pr.top&&st.y<=pr.bottom,onSelf=st.y>=er.top&&st.y<=er.bottom;
+    if(inside&&!onSelf){
+      let best=Infinity;
+      for(const c of st.box.querySelectorAll(CHILD)){
+        if(c===st.el)continue;
+        const r=c.getBoundingClientRect(),d=st.y<r.top?r.top-st.y:st.y>r.bottom?st.y-r.bottom:0;
+        if(d<best){best=d;tgt=c;pos=st.y<r.top+r.height/2?'before':'after'}
+      }
+    }
+    if(st.tgt!==tgt||st.pos!==pos){mark();if(tgt)tgt.classList.add(pos==='before'?'drop-before':'drop-after')}
+    st.tgt=tgt;st.pos=pos;
+  }
+  function tick(){                                               // автопрокрутка у краёв экрана
+    if(!st||!st.active)return;
+    const edge=70,h=window.innerHeight;let dy=0;
+    if(st.y<edge)dy=-Math.ceil((edge-st.y)/5);else if(st.y>h-edge)dy=Math.ceil((st.y-(h-edge))/5);
+    if(dy){window.scrollBy(0,dy);update()}
+    raf=requestAnimationFrame(tick);
+  }
+  function drop(){
+    const list=st.list,from=st.idx,tgt=st.tgt,pos=st.pos;
+    clear();
+    if(!tgt)return;
+    const arr=S[list],a=arr[from],b=arr[Number(tgt.dataset.az.split(':')[1])];
+    if(!a||!b||a===b)return;
+    arr.splice(arr.indexOf(a),1);
+    const at=arr.indexOf(b);arr.splice(pos==='after'?at+1:at,0,a);
+    RENDER[list]();autosizeAll();recalc();saveNow();
+  }
+  document.addEventListener('pointerdown',e=>{
+    if(st||(e.pointerType==='mouse'&&e.button!==0))return;
+    const host=e.target.closest&&e.target.closest(SEL);
+    if(!host||e.target.closest('.thumb')||!holdAllowed(e)||!GROUPS.includes(host.parentElement.id))return;
+    const[list,idx]=(host.dataset.az||'').split(':');
+    if(!RENDER[list]||!S[list]||!S[list][Number(idx)])return;
+    st={el:host,box:host.parentElement,list,idx:Number(idx),pid:e.pointerId,x0:e.clientX,y0:e.clientY,x:e.clientX,y:e.clientY,active:false,tgt:null,pos:null,
+        timer:setTimeout(start,HOLD)};
+  });
+  document.addEventListener('pointermove',e=>{
+    if(!st||e.pointerId!==st.pid)return;
+    st.x=e.clientX;st.y=e.clientY;
+    if(!st.active){if(Math.hypot(st.x-st.x0,st.y-st.y0)>SLOP)clear();return}
+    update();
+  });
+  document.addEventListener('pointerup',e=>{
+    if(!st||e.pointerId!==st.pid)return;
+    if(st.active){lastDrag=Date.now();drop()}else clear();
+  });
+  document.addEventListener('pointercancel',e=>{if(st&&e.pointerId===st.pid)clear()});
+  document.addEventListener('touchmove',e=>{if(st&&st.active&&e.cancelable)e.preventDefault()},{passive:false});
+  document.addEventListener('contextmenu',e=>{if(st)e.preventDefault()});
+  document.addEventListener('selectstart',e=>{if(st&&st.active)e.preventDefault()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&st)clear()});
+  document.addEventListener('click',e=>{if(Date.now()-lastDrag<400){e.stopPropagation();e.preventDefault()}},true);
+})();
+
+/* Перетаскивание изображений: зажать → перенести.
+   На карточку или предмет — изображение вложится в неё; на свободное место блока — станет элементом этого блока (чертой, умением…);
+   на другое изображение — встанет рядом с ним. */
+(()=>{
+  const CARD='.weapon,.spell-card,.feature-card,.summon-card,.inv-item',HOLD=350,SLOP=8;
+  let st=null,lastDrag=0,raf=0;
+  const bodyAz=card=>{const b=card.querySelector(':scope>.inv-body');return b?b.dataset.az:null};
+  function unmark(){if(st&&st.mark){st.mark.node.classList.remove(st.mark.cls);st.mark=null}}
+  function clear(){
+    if(!st)return;
+    clearTimeout(st.timer);cancelAnimationFrame(raf);unmark();
+    st.el.classList.remove('dragging');document.body.classList.remove('inv-dragging');
+    if(st.ghost)st.ghost.remove();
+    st=null;
+  }
+  function start(){
+    st.active=true;st.timer=0;
+    st.ghost=document.createElement('div');st.ghost.className='inv-ghost';
+    const im=document.createElement('img');im.alt='';im.src=st.el.querySelector('img').src;st.ghost.appendChild(im);
+    document.body.appendChild(st.ghost);
+    st.el.classList.add('dragging');document.body.classList.add('inv-dragging');
+    if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();
+    const sel=window.getSelection&&window.getSelection();if(sel)sel.removeAllRanges();
+    if(navigator.vibrate)try{navigator.vibrate(15)}catch(e){}
+    update();tick();
+  }
+  function resolve(){
+    const el=document.elementFromPoint(st.x,st.y);if(!el)return null;
+    const th=el.closest('.thumb');
+    if(th){
+      if(th===st.el)return null;
+      const z=zoneOf(th),r=th.getBoundingClientRect(),before=st.y<r.top+r.height/2;
+      return z?{type:'thumb',node:th,az:z.dataset.az,idx:[...th.parentElement.children].indexOf(th),pos:before?'before':'after',cls:before?'drop-before':'drop-after'}:null;
+    }
+    const card=el.closest(CARD);
+    if(card){const az=card.classList.contains('inv-item')?bodyAz(card):card.dataset.az;return az&&az!==st.az?{type:'attach',node:card,az,cls:'drop-target'}:null}
+    const z=el.closest('[data-az]');if(!z)return null;
+    const az=z.dataset.az,zt=az.startsWith('static:')?zoneType(az):null,box=el.closest('.attach');
+    if(zt&&!(box&&box.parentElement===z))return{type:'item',node:z,az,zt,cls:'drop-root'};
+    return az!==st.az?{type:'attach',node:z,az,cls:'drop-target'}:null;
+  }
+  function update(){
+    st.ghost.style.transform=`translate(${st.x+14}px,${st.y+14}px)`;
+    const t=resolve();
+    if(!(t&&st.mark&&st.mark.node===t.node&&st.mark.cls===t.cls)){unmark();if(t){t.node.classList.add(t.cls);st.mark={node:t.node,cls:t.cls}}}
+    st.tgt=t;
+  }
+  function tick(){                                               // автопрокрутка у краёв экрана
+    if(!st||!st.active)return;
+    const edge=70,h=window.innerHeight;let dy=0;
+    if(st.y<edge)dy=-Math.ceil((edge-st.y)/5);else if(st.y>h-edge)dy=Math.ceil((st.y-(h-edge))/5);
+    if(dy){window.scrollBy(0,dy);update()}
+    raf=requestAnimationFrame(tick);
+  }
+  function drop(){
+    const az=st.az,j=st.j,tgt=st.tgt;
+    clear();
+    if(tgt)moveImage(az,j,tgt);
+  }
+  document.addEventListener('pointerdown',e=>{
+    if(st||(e.pointerType==='mouse'&&(e.button!==0||(e.target.closest&&e.target.closest('button')))))return;
+    const th=e.target.closest&&e.target.closest('.thumb');if(!th)return;
+    const z=zoneOf(th);if(!z)return;
+    st={el:th,az:z.dataset.az,j:[...th.parentElement.children].indexOf(th),pid:e.pointerId,x0:e.clientX,y0:e.clientY,x:e.clientX,y:e.clientY,active:false,tgt:null,mark:null,
         timer:setTimeout(start,HOLD)};
   });
   document.addEventListener('pointermove',e=>{
@@ -1810,11 +2121,14 @@ document.addEventListener('click',e=>{
     case 'new-char':createCharacter();break;
     case 'delete-char':deleteCharacter();break;
     case 'toggle-theme':toggleTheme();break;
+    case 'short-rest':shortRest();break;
+    case 'long-rest':longRest();break;
+    case 'reset-rest':{const f=S.features[b.dataset.i];if(f){f.needShort=false;f.needLong=false;const c=b.closest('.feature-card');c.querySelectorAll('input[type="checkbox"]').forEach(x=>{x.checked=false});c.classList.remove('spent');scheduleSave()}break}
     case 'add-weapon':addTo('weapons',newWeapon());break;
     case 'add-summon':addTo('summons',newSummon());break;
-    case 'add-feature':addTo('features',{name:'',description:'',images:[]});break;
+    case 'add-feature':addTo('features',{name:'',description:'',images:[],needShort:false,needLong:false});break;
     case 'add-trait':addTo('traits',{name:'',text:'',images:[]});break;
-    case 'add-item':addTo('inventory',{name:'Новый предмет',qty:'',desc:'',open:false,items:[]});break;
+    case 'add-item':addTo('inventory',{name:'Новый предмет',qty:'',desc:'',open:false,items:[],images:[]});break;
     case 'inv-toggle':{const it=invGet(b.dataset.i);if(!it)break;
       it.open=!it.open;const row=b.closest('.inv-item');row.classList.toggle('open',it.open);
       b.setAttribute('aria-expanded',String(it.open));
@@ -1829,7 +2143,7 @@ document.addEventListener('click',e=>{
     case 'save':saveNow();break;
     case 'export':exportBackup();break;
     case 'import':importPicker.click();break;
-    case 'print':window.print();break;
+    case 'reset-cond':$('conditions').value='';$('exhaustion').value='0';$('conditions').dispatchEvent(new Event('input',{bubbles:true}));recalc();saveNow();break;case 'print':window.print();break;case 'print-compact':document.body.classList.add('pc');window.print();break;case 'hist-restore':histRestore(+b.dataset.i);break;
     case 'reset':resetSheet();break;
     case 'fold-card':foldCard(b);break;
     case 'fold-all':case 'unfold-all':{
@@ -1847,11 +2161,12 @@ const zoneOf=n=>n&&n.closest?n.closest('[data-az]'):null;
 function zoneImages(az){
   const [t,k]=String(az).split(':');
   if(t==='static')return (S.attach[k]=S.attach[k]||[]);
+  if(t==='inventory'){const it=invGet(k);return it?(it.images=it.images||[]):null}
   const it=(S[t]||[])[Number(k)];
   return it&&typeof it==='object'?(it.images=it.images||[]):null;
 }
 function attachHTML(imgs){
-  return `<div class="thumbs">${imgs.map((src,j)=>`<figure class="thumb"><img src="${src}" alt="Вложение ${j+1}"><button type="button" class="thumb-del" data-act="img-del" data-j="${j}" aria-label="Удалить изображение">×</button></figure>`).join('')}</div><button type="button" class="attach-add" data-act="img-add" title="Можно вставить из буфера (Ctrl+V) или перетащить файл сюда">+ Скриншот / изображение</button>`;
+  return `<div class="thumbs">${imgs.map((src,j)=>`<figure class="thumb"><img src="${src}" alt="Вложение ${j+1}" draggable="false"><button type="button" class="thumb-del" data-act="img-del" data-j="${j}" aria-label="Удалить изображение">×</button></figure>`).join('')}</div><button type="button" class="attach-add" data-act="img-add" title="Можно вставить из буфера (Ctrl+V) или перетащить файл сюда">+ Скриншот / изображение</button>`;
 }
 /* Текстовые поля сами растут под текст — без внутренней прокрутки */
 function autosize(el){
@@ -1875,7 +2190,8 @@ function fillAttach(){
   autosizeAll();
 }
 // После каждой перерисовки списка карточек заново заполняем их галереи
-{const r1=renderWeapons,r2=renderFeatures,r3=renderTraits,r4=renderSpells,r5=renderSummons;
+{const r1=renderWeapons,r2=renderFeatures,r3=renderTraits,r4=renderSpells,r5=renderSummons,r6=renderInventory;
+ renderInventory=()=>{r6();fillAttach()};
  renderWeapons=()=>{r1();fillAttach()};renderFeatures=()=>{r2();fillAttach()};renderTraits=()=>{r3();fillAttach()};renderSpells=()=>{r4();fillAttach()};renderSummons=()=>{r5();fillAttach()};}
 
 function compress(file){
@@ -1891,10 +2207,81 @@ function compress(file){
     img.src=url;
   });
 }
+/* Что «является» изображением в каждом блоке: в блоке черт — черта, в блоке умений — умение и т.д. */
+const ZT={traits:{list:'traits',what:'черту'},features:{list:'features',what:'умение'},weapons:{list:'weapons',what:'оружие'},summons:{list:'summons',what:'саммона'},cantrip:{list:'spells',kind:'cantrip',what:'заговор'},spell:{list:'spells',kind:'spell',what:'заклинание'},inventory:{list:'inventory',what:'предмет'}};
+function zoneType(az){
+  const [t,k]=String(az).split(':');
+  if(t==='static')return ({traits:ZT.traits,features:ZT.features,weapons:ZT.weapons,summons:ZT.summons,cantrips:ZT.cantrip,spells:ZT.spell,inventory:ZT.inventory})[k]||null;
+  if(t==='spells'){const sp=S.spells[Number(k)];return sp&&sp.kind==='cantrip'?ZT.cantrip:ZT.spell}
+  if(t==='inventory')return ZT.inventory;
+  return ZT[t]||null;
+}
+function makeImageItem(zt,img){
+  switch(zt.list){
+    case 'traits':return{name:'',text:'',images:[img]};
+    case 'features':return{name:'',description:'',images:[img],needShort:false,needLong:false};
+    case 'weapons':return{...newWeapon(),name:'',images:[img]};
+    case 'summons':return{...newSummon(),name:'',images:[img]};
+    case 'spells':return{...newSpell(zt.kind),name:'',images:[img]};
+    default:return{name:'',qty:'',desc:'',open:true,items:[],images:[img]};
+  }
+}
+/* Перенос изображения (данные): из зоны srcAz в другое место. tgt: {type:'thumb'|'attach'|'item', az, idx, pos, zt} */
+function imgOwner(az){
+  const [t,k]=String(az).split(':');
+  if(t==='static')return null;
+  if(t==='inventory'){const it=invGet(k);return it?{t,it,path:k}:null}
+  const it=(S[t]||[])[Number(k)];return it?{t,it}:null;
+}
+function imgBlank(t,it){
+  const tx=v=>rtPlain(String(v||'')).trim();
+  switch(t){
+    case 'traits':return !tx(it.name)&&!tx(it.text);
+    case 'features':return !tx(it.name)&&!tx(it.description);
+    case 'weapons':return !tx(it.name)&&!tx(it.desc);
+    case 'summons':return !tx(it.name)&&!tx(it.kind)&&!tx(it.attacks)&&!tx(it.notes);
+    case 'spells':return !tx(it.name)&&!tx(it.description);
+    case 'inventory':return !tx(it.name)&&!tx(it.desc)&&!(it.items&&it.items.length);
+  }
+  return false;
+}
+function moveImage(srcAz,j,tgt){
+  const srcArr=zoneImages(srcAz);if(!srcArr||!tgt||!(j>=0&&j<srcArr.length))return false;
+  const own=imgOwner(srcAz),img=srcArr[j];
+  let destArr=null;
+  if(tgt.type!=='item'){destArr=zoneImages(tgt.az);if(!destArr||(tgt.type==='attach'&&destArr===srcArr))return false}
+  srcArr.splice(j,1);
+  if(tgt.type==='thumb'){let ti=tgt.idx;if(destArr===srcArr&&j<ti)ti--;destArr.splice(tgt.pos==='after'?ti+1:ti,0,img)}
+  else if(tgt.type==='attach')destArr.push(img);
+  else S[tgt.zt.list].push(makeImageItem(tgt.zt,img));
+  if(destArr&&String(tgt.az).startsWith('inventory:')){const d=invGet(String(tgt.az).slice(10));if(d)d.open=true}   // предмет раскрываем, чтобы картинка была видна
+  if(own&&!srcArr.length&&imgBlank(own.t,own.it)){                 // из пустой карточки-картинки забрали последнее изображение — карточка не нужна
+    if(own.t==='inventory'){const{arr,idx}=invParent(own.path);arr.splice(idx,1)}
+    else{const k=S[own.t].indexOf(own.it);if(k>=0)S[own.t].splice(k,1)}
+  }
+  renderAll();recalc();autosizeAll();saveNow();
+  return true;
+}
 async function addImages(az,files){
   const list=[...files].filter(f=>f&&f.type&&f.type.startsWith('image/'));if(!list.length)return;
+  const zt=zoneType(az);let asItem=false;
+  if(zt){
+    const c=await showModal({title:'Добавить изображение',text:`Добавить как ${zt.what} или просто как изображение?`,ok:'Как '+zt.what,cancel:'Просто изображение',cancelValue:'plain'});
+    if(c===null)return;
+    asItem=c===true;
+  }
   const added=[];
   for(const f of list){try{added.push(await compress(f))}catch(e){setStatus('Не удалось загрузить изображение')}}
+  if(asItem&&added.length){
+    const items=added.map(img=>makeImageItem(zt,img));
+    items.forEach(it=>S[zt.list].push(it));
+    renderAll();recalc();autosizeAll();
+    if(!saveNow()){
+      items.forEach(it=>{const k=S[zt.list].indexOf(it);if(k>=0)S[zt.list].splice(k,1)});renderAll();recalc();
+      await notify('Недостаточно места','Не хватает места в хранилище браузера — изображение не добавлено. Удали ненужные изображения и попробуй снова.');
+    }
+    return;
+  }
   const arr=zoneImages(az);if(!arr||!added.length)return;
   arr.push(...added);fillAttach();
   if(!saveNow()){                       // не хватило места — откатываем, чтобы не потерять изображение после перезагрузки
