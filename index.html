@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0b0e13">
 <meta name="color-scheme" content="dark">
-<script>try{if(localStorage.getItem('dndThemeV1')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}</script>
+<script>try{var t=localStorage.getItem('dndThemeV1');if(t==='light'||t==='parchment')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <title>Интерактивный лист персонажа D&D</title>
 <style>
 :root{
@@ -408,6 +408,38 @@ body.pc{font-size:11px}body.pc .tabs,body.pc .inv-body,body.pc .attach,body.pc .
 body.pc .panel{padding:8px;break-inside:avoid}body.pc .grid{gap:8px}body.pc h2{margin-bottom:8px;font-size:15px}body.pc rt-box{min-height:0}body.pc header{padding:8px 0}}
 @media print{#storageUsed{display:none}}
 .rich .chip{margin:0 5px;padding:0 7px;font:600 .8em/1.4 var(--sans);vertical-align:baseline;color:var(--gold);background:var(--gold-bg);border:1.25px solid var(--gold-dim);border-radius:11px}
+[hidden]{display:none!important}
+.brand{position:relative}.head-tools{display:flex;gap:8px;align-items:center;margin-left:auto}
+#sheetSearch{width:120px;padding:7px 12px;border-radius:20px;font-size:13px;transition:width .2s}#sheetSearch:focus{width:190px}
+#lookBtn{width:36px;height:36px;padding:0;border-radius:50%;font-size:16px;line-height:1}
+#lookPop,#searchRes{position:absolute;right:0;top:100%;z-index:70;min-width:230px;max-width:92vw;padding:12px;background:var(--surface);border:1px solid var(--line-strong);border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.35)}
+#searchRes{padding:6px;max-height:60vh;overflow:auto}#searchRes button{display:flex;width:100%;justify-content:space-between;gap:10px;border:0;background:none;text-align:left;padding:8px 10px}#searchRes small{color:var(--muted)}
+.seg{display:flex;gap:6px}.seg button{flex:1}.seg button.on{border-color:var(--gold);color:var(--gold)}
+.acc-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;font-size:13px;color:var(--muted)}
+.acc-row input{width:46px;height:32px;padding:2px;border-radius:8px}.acc-row button{padding:5px 10px;font-size:12px}
+.fav-row{text-align:right;line-height:1;height:22px}.fav-btn{background:none;border:0;padding:0 4px;font-size:18px;color:var(--gold-dim);line-height:1}.fav-btn.on{color:var(--gold)}
+.flash{animation:fl 1.4s}@keyframes fl{0%,60%{box-shadow:0 0 0 2px var(--gold)}100%{box-shadow:none}}
+.stepper{display:inline-flex;gap:4px;align-items:center}.step{width:30px;height:30px;padding:0;border-radius:8px;line-height:1}
+.slot-inputs .stepper input{min-width:0;width:100%;text-align:center}
+@media print{.head-tools,.fav-row{display:none}}
+:root[data-theme="parchment"]{color-scheme:light;--bg:#f5f0e4;--surface:#fffdf8;--surface2:#f4eddd;--field:#fffefb;--line:rgba(110,80,30,.2);--line-strong:rgba(110,80,30,.4);--text:#2a2417;--muted:#6a634f;--gold:#7a5818;--gold-dim:#9c7d3f;--gold-bg:rgba(122,88,24,.09);--red:#b0443d;--red-bg:rgba(176,68,61,.09);--red-line:rgba(176,68,61,.45);--ok:#3d7a37;--warn:#a8620f;--temp:#2b6a9c;--bg:#e6d6b0;--surface:#f1e3c1;--surface2:#e9d9b4;--field:#f7edd2;--line:rgba(95,62,22,.28);--line-strong:rgba(95,62,22,.5);--text:#33250f;--muted:#76653f;--gold:#7d4a1a;--gold-dim:#a07040;--gold-bg:rgba(125,74,26,.1);--red:#9b3a2d}
+html[data-theme="parchment"] body{background:radial-gradient(900px 380px at 50% -140px,rgba(122,88,24,.08),transparent 70%),var(--bg)}
+html[data-theme="parchment"] h3{color:#5a4520}
+html[data-theme="parchment"] .fold-head:hover{color:#4a3510}
+html[data-theme="parchment"] select option{background:#fff}
+html[data-theme="parchment"] select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%237a5818' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+html[data-theme="parchment"] button.primary{color:#fff}
+html[data-theme="parchment"] button.primary:hover{background:#8f6a22}
+html[data-theme="parchment"] .tab-btn.active{background:rgba(122,88,24,.12)}
+html[data-theme="parchment"] .character-manager{background:rgba(245,240,228,.94)}
+html[data-theme="parchment"] .hero-img,html[data-theme="parchment"] .thumb{background:#ece4d2}
+html[data-theme="parchment"] .storage-warn{color:#6b3a12}
+html[data-theme="parchment"] .dmg-break,html[data-theme="parchment"] details.help{background:rgba(0,0,0,.035)}
+html[data-theme="parchment"] #rtBar{box-shadow:0 -6px 20px rgba(60,40,10,.15)}
+html[data-theme="parchment"] #rtPop,html[data-theme="parchment"] .character-picker,html[data-theme="parchment"] .modal-card,html[data-theme="parchment"] .inv-ghost{box-shadow:0 10px 28px rgba(60,40,10,.2)}
+html[data-theme="parchment"] .modal{background:rgba(40,30,15,.55)}
+#lookBtn{color:var(--gold)}#lookBtn svg{display:block;margin:auto}
+.inv-item.ins-before>.inv-main{box-shadow:0 -3px 0 0 var(--gold)}.inv-item.ins-after>.inv-main{box-shadow:0 3px 0 0 var(--gold)}
 </style>
 </head>
 <body>
@@ -416,7 +448,7 @@ body.pc .panel{padding:8px;break-inside:avoid}body.pc .grid{gap:8px}body.pc h2{m
     <h1 id="sheetTitle" contenteditable="true" spellcheck="false" aria-label="Редактируемый заголовок">Новый персонаж</h1>
     <p id="sheetSubtitle" contenteditable="true" spellcheck="false" aria-label="Редактируемый подзаголовок">Интерактивный лист персонажа Dungeons &amp; Dragons</p>
   </div>
-  <button type="button" id="themeToggle" class="theme-btn" data-act="toggle-theme" aria-pressed="false" title="Сменить тему">☀ Светлая</button>
+  <div class="head-tools"><input type="search" id="sheetSearch" placeholder="Поиск…" aria-label="Поиск по листу" autocomplete="off"><button type="button" id="lookBtn" title="Оформление" aria-label="Оформление"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg></button></div><div id="searchRes" hidden></div><div id="lookPop" hidden><div class="seg"><button type="button" data-theme-set="dark">Тёмная</button><button type="button" data-theme-set="light">Светлая</button><button type="button" data-theme-set="parchment">Пергамент</button></div><div class="acc-row"><span>Акцент</span><input type="color" id="accentPick" value="#d4b37a" aria-label="Цвет акцента"><button type="button" id="accentReset">Сброс</button></div></div>
 </div></header>
 
 <div id="storageWarn" class="storage-warn" hidden><div class="wrap"><strong>Браузер не разрешает сохранять данные.</strong> Так бывает на iPhone, если файл открыт из «Файлов», почты или в приватной вкладке. Пока страница открыта, всё работает, но после закрытия данные пропадут. Нажми «Скачать резервную копию» — файл можно потом загрузить обратно. Постоянное сохранение работает, если открыть лист по обычной ссылке (например, с GitHub Pages). <button type="button" data-act="export" style="margin-top:8px">Скачать резервную копию</button></div></div>
@@ -463,6 +495,7 @@ body.pc .panel{padding:8px;break-inside:avoid}body.pc .grid{gap:8px}body.pc h2{m
 <div class="row actions rest-actions"><button type="button" data-act="short-rest">Короткий отдых</button><button type="button" data-act="long-rest">Длительный отдых</button></div>
 </section>
 
+<section class="panel span-12" data-az="static:favs" id="favPanel" hidden><h2>Избранное</h2><input type="hidden" id="favs" value=""><div class="chips" id="favList"></div></section>
 <section class="panel span-12" data-az="static:conditions"><h2>Состояния</h2>
 <div class="fields" style="margin-bottom:14px"><div class="field"><label for="inspiration">Вдохновение</label><select id="inspiration"><option value="0">Нет</option><option value="1">Вдохновение мастера ✦</option><option value="2">Вдохновение барда ✦</option></select></div>
 <div class="field"><label for="exhaustion">Истощение</label><select id="exhaustion"><option value="0">0 — нет</option><option value="1">1 — помеха при проверках характеристик</option><option value="2">2 — скорость вдвое меньше</option><option value="3">3 — помеха при атаках и спасбросках</option><option value="4">4 — максимум хитов вдвое меньше</option><option value="5">5 — скорость 0</option><option value="6">6 — смерть</option></select></div></div>
@@ -572,16 +605,16 @@ try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}
 const THEME_KEY='dndThemeV1';
 function applyTheme(t){
   const light=t==='light';
-  document.documentElement.setAttribute('data-theme',light?'light':'dark');
-  const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=light?'#f5f0e4':'#0b0e13';
-  const c=document.querySelector('meta[name="color-scheme"]');if(c)c.content=light?'light':'dark';
+  document.documentElement.setAttribute('data-theme',t==='parchment'?'parchment':light?'light':'dark');
+  const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='parchment'?'#e9dcc0':light?'#f5f0e4':'#0b0e13';
+  const c=document.querySelector('meta[name="color-scheme"]');if(c)c.content=(light||t==='parchment')?'light':'dark';
   const b=$('themeToggle');if(b){b.textContent=light?'☾ Тёмная':'☀ Светлая';b.setAttribute('aria-pressed',String(light))}
 }
 function toggleTheme(){
   const next=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';
   store.set(THEME_KEY,next);applyTheme(next);
 }
-applyTheme(store.get(THEME_KEY)==='light'?'light':'dark');
+applyTheme(store.get(THEME_KEY));
 
 /* ============================================================
    Форматируемый текст. Вместо textarea / input везде стоит <rt-box> — редактируемый блок.
@@ -989,7 +1022,7 @@ rtPop.addEventListener('focusout',e=>{
 $('stats').innerHTML=ABILITIES.map(([id,name])=>`<div class="stat"><label for="${id}">${name}</label><input type="number" id="${id}" min="1" max="30" value="10"><div class="mod" id="mod-${id}">+0</div></div>`).join('');
 $('saves').innerHTML=ABILITIES.map(([id,name])=>`<div class="item"><label class="checkline"><input type="checkbox" data-save="${id}"> ${name}</label><span class="value" id="saveval-${id}">+0</span></div>`).join('');
 $('skills').innerHTML=SKILLS.map(([name],i)=>`<div class="item"><div><label class="checkline"><input type="checkbox" data-skill="${i}" data-kind="prof"> ${name}</label><label class="checkline sub"><input type="checkbox" data-skill="${i}" data-kind="exp"> Компетентность</label></div><span class="value" id="skillval-${i}">+0</span></div>`).join('');
-$('spellSlots').innerHTML=Array.from({length:9},(_,i)=>{const l=i+1;return `<div class="slot"><div class="slot-title">${l}-й уровень</div><div class="slot-inputs"><div><label for="slotTotal${l}">Всего</label><input type="number" min="0" id="slotTotal${l}" value="0"></div><div><label for="slotLeft${l}">Осталось</label><input type="number" min="0" id="slotLeft${l}" value="0"></div></div></div>`}).join('');
+$('spellSlots').innerHTML=Array.from({length:9},(_,i)=>{const l=i+1;return `<div class="slot"><div class="slot-title">${l}-й уровень</div><div class="slot-inputs"><div><label for="slotTotal${l}">Всего</label><input type="number" min="0" id="slotTotal${l}" value="0"></div><div><label for="slotLeft${l}">Осталось</label><div class="stepper"><button type="button" class="step" data-d="-1" aria-label="Минус">−</button><input type="number" min="0" id="slotLeft${l}" value="0"><button type="button" class="step" data-d="1" aria-label="Плюс">+</button></div></div></div></div>`}).join('');
 
 const saveRefs=ABILITIES.map(([id])=>({id,cb:document.querySelector(`[data-save="${id}"]`)}));
 const skillRefs=SKILLS.map((_,i)=>({prof:document.querySelector(`[data-skill="${i}"][data-kind="prof"]`),exp:document.querySelector(`[data-skill="${i}"][data-kind="exp"]`)}));
@@ -1292,7 +1325,7 @@ ${w.special?`<div class="part"><span class="pl">Особый урон</span><spa
 <div class="attach"></div><div class="card-foot"><button type="button" class="danger" data-act="remove" data-list="weapons" data-i="${i}">Удалить оружие</button></div></div>`).join('')||'<p class="empty">Оружие пока не добавлено.</p>';
 }
 function renderFeatures(){
-  $('characterFeatures').innerHTML=S.features.map((f,i)=>`<div class="feature-card${f.needShort||f.needLong?' spent':''}" data-az="features:${i}"><div class="feature-top"><rt-box class="name-ta" data-single contenteditable="true" data-list="features" data-i="${i}" data-k="name" aria-label="Название особенности ${i+1}" data-ph="Название особенности">${rtToHTML(f.name)}</rt-box><button type="button" class="danger" data-act="remove" data-list="features" data-i="${i}">Удалить</button></div><rt-box contenteditable="true" data-rows="4" data-list="features" data-i="${i}" data-k="description" aria-label="Описание особенности ${i+1}" data-ph="Описание особенности...">${rtToHTML(f.description)}</rt-box><div class="rest-row"><span class="rest-label">Нужен отдых:</span><label class="checkline"><input type="checkbox" data-list="features" data-i="${i}" data-k="needShort" ${f.needShort?'checked':''}> короткий</label><label class="checkline"><input type="checkbox" data-list="features" data-i="${i}" data-k="needLong" ${f.needLong?'checked':''}> длительный</label><button type="button" class="mini-btn" data-act="reset-rest" data-i="${i}">Сбросить</button></div><div class="rest-row charge-row"><span class="rest-label">Заряды:</span><input type="number" min="0" data-list="features" data-i="${i}" data-k="chLeft" value="${f.chLeft||0}" aria-label="Осталось зарядов"> из <input type="number" min="0" data-list="features" data-i="${i}" data-k="chMax" value="${f.chMax||0}" aria-label="Всего зарядов"><select data-list="features" data-i="${i}" data-k="chRest" aria-label="Восстановление"><option value="">без восстановления</option><option value="short" ${f.chRest==='short'?'selected':''}>короткий отдых</option><option value="long" ${f.chRest==='long'?'selected':''}>длительный отдых</option><option value="dawn" ${f.chRest==='dawn'?'selected':''}>на рассвете (длительный)</option></select></div></div>`).join('');
+  $('characterFeatures').innerHTML=S.features.map((f,i)=>`<div class="feature-card${f.needShort||f.needLong?' spent':''}" data-az="features:${i}"><div class="feature-top"><rt-box class="name-ta" data-single contenteditable="true" data-list="features" data-i="${i}" data-k="name" aria-label="Название особенности ${i+1}" data-ph="Название особенности">${rtToHTML(f.name)}</rt-box><button type="button" class="danger" data-act="remove" data-list="features" data-i="${i}">Удалить</button></div><rt-box contenteditable="true" data-rows="4" data-list="features" data-i="${i}" data-k="description" aria-label="Описание особенности ${i+1}" data-ph="Описание особенности...">${rtToHTML(f.description)}</rt-box><div class="rest-row"><span class="rest-label">Нужен отдых:</span><label class="checkline"><input type="checkbox" data-list="features" data-i="${i}" data-k="needShort" ${f.needShort?'checked':''}> короткий</label><label class="checkline"><input type="checkbox" data-list="features" data-i="${i}" data-k="needLong" ${f.needLong?'checked':''}> длительный</label><button type="button" class="mini-btn" data-act="reset-rest" data-i="${i}">Сбросить</button></div><div class="rest-row charge-row"><span class="rest-label">Заряды:</span><span class="stepper"><button type="button" class="step" data-d="-1" aria-label="Минус">−</button><input type="number" min="0" data-list="features" data-i="${i}" data-k="chLeft" value="${f.chLeft||0}" aria-label="Осталось зарядов"><button type="button" class="step" data-d="1" aria-label="Плюс">+</button></span> из <input type="number" min="0" data-list="features" data-i="${i}" data-k="chMax" value="${f.chMax||0}" aria-label="Всего зарядов"><select data-list="features" data-i="${i}" data-k="chRest" aria-label="Восстановление"><option value="">без восстановления</option><option value="short" ${f.chRest==='short'?'selected':''}>короткий отдых</option><option value="long" ${f.chRest==='long'?'selected':''}>длительный отдых</option><option value="dawn" ${f.chRest==='dawn'?'selected':''}>на рассвете (длительный)</option></select></div></div>`).join('');
 }
 function renderTraits(){
   $('characterTraits').innerHTML=S.traits.map((t,i)=>`<div class="feature-card" data-az="traits:${i}"><div class="feature-top"><rt-box class="name-ta" data-single contenteditable="true" data-list="traits" data-i="${i}" data-k="name" aria-label="Название черты ${i+1}" data-ph="Название черты">${rtToHTML(t.name)}</rt-box><button type="button" class="danger" data-act="remove" data-list="traits" data-i="${i}">Удалить</button></div><rt-box contenteditable="true" data-rows="3" data-list="traits" data-i="${i}" data-k="text" aria-label="Описание черты ${i+1}" data-ph="Опиши черту персонажа...">${rtToHTML(t.text)}</rt-box></div>`).join('');
@@ -1614,7 +1647,7 @@ const proficiencyForLevel=l=>Math.ceil(clamp(Math.round(Number(l))||1,1,20)/4)+1
 
 /* ===== Дополнения: КД, СЛ, состояния, настройка, заряды, фильтр, история ===== */
 const ARM={none:[10,99],barb:[10,99,'con'],monk:[10,99,'wis'],padded:[11,99],leather:[11,99],studded:[12,99],hide:[12,2],chainshirt:[13,2],scale:[14,2],breast:[14,2],halfplate:[15,2],ring:[14,0],chain:[16,0],splint:[17,0],plate:[18,0]};
-function extras(p){
+function extras(p){favRender();
   $('spellDC').value=8+p+mod(abil($('spellAbility').value));
   const auto=$('acMode').value==='auto',ac=$('ac');
   document.querySelectorAll('.auto-ac').forEach(e=>e.hidden=!auto);
@@ -1660,6 +1693,77 @@ function histRender(){
 }
 $('histBox')&&$('histBox').addEventListener('toggle',histRender);
 function histRestore(i){const h=hist[i];if(!h)return;applyState(normalize(JSON.parse(h.snap)));saveNow()}
+
+/* ===== Акцент, поиск, избранное, шаги ===== */
+const ACC_KEY='dndAccentV1';
+function applyAccent(){
+  const h=store.get(ACC_KEY),st=document.documentElement.style;
+  ['--gold','--gold-dim','--gold-bg'].forEach(k=>st.removeProperty(k));
+  if(!/^#[0-9a-f]{6}$/i.test(h||''))return;
+  const light=document.documentElement.dataset.theme!=='dark',c=[1,3,5].map(i=>parseInt(h.substr(i,2),16)),m=p=>c.map(v=>Math.round(v*(1-p))).join(',');
+  st.setProperty('--gold','rgb('+m(light?.35:0)+')');st.setProperty('--gold-dim','rgb('+m(light?.2:.35)+')');st.setProperty('--gold-bg','rgba('+c.join(',')+','+(light?.09:.1)+')');
+}
+function syncLook(){
+  applyAccent();const t=document.documentElement.dataset.theme;
+  document.querySelectorAll('[data-theme-set]').forEach(b=>b.classList.toggle('on',b.dataset.themeSet===t));
+  const h=store.get(ACC_KEY);$('accentPick').value=/^#[0-9a-f]{6}$/i.test(h||'')?h:(t==='light'?'#7a5818':t==='parchment'?'#8a5a1e':'#d4b37a');
+}
+$('accentPick').addEventListener('input',e=>{store.set(ACC_KEY,e.target.value);applyAccent()});
+$('accentReset').addEventListener('click',()=>{store.set(ACC_KEY,'');syncLook()});
+syncLook();
+function cardName(c){const n=c.querySelector('.name-ta,.card-title');return n?n.textContent.trim():''}
+function jumpTo(el){
+  let p;while(p=el.closest('.panel.collapsed'))p.classList.remove('collapsed');
+  const pane=el.closest('[id$="Pane"]');if(pane&&!pane.classList.contains('active')){const b=document.querySelector('.tab-btn[data-tab="'+pane.id+'"]');if(b)b.click()}
+  el.scrollIntoView({block:'center',behavior:'smooth'});el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),1500);
+}
+const SQ='[data-az^="weapons:"],[data-az^="features:"],[data-az^="traits:"],[data-az^="spells:"],[data-az^="summons:"],.inv-item',SQT={weapons:'Оружие',features:'Умение',traits:'Черта',spells:'Заклинание',summons:'Саммон'};
+let hits=[];
+$('sheetSearch').addEventListener('input',e=>{
+  const q=e.target.value.trim().toLowerCase(),r=$('searchRes');
+  if(q.length<2){r.hidden=true;return}
+  const out=[];
+  for(const c of document.querySelectorAll(SQ)){
+    if(out.length>=12)break;if(!c.textContent.toLowerCase().includes(q))continue;
+    out.push([c,c.classList.contains('inv-item')?'Предмет':SQT[c.dataset.az.split(':')[0]],cardName(c)||'Без названия']);
+  }
+  hits=out.map(x=>x[0]);
+  r.innerHTML=out.length?out.map((x,i)=>'<button type="button" data-hit="'+i+'"><span>'+esc(x[2])+'</span><small>'+x[1]+'</small></button>').join(''):'<div class="muted" style="padding:8px">Ничего не найдено</div>';
+  r.hidden=false;
+});
+const FAVC='.weapon[data-az],.feature-card[data-az^="features:"],.spell-card[data-az]';
+function favGet(){try{return JSON.parse($('favs').value||'[]')}catch(e){return[]}}
+function favKey(c){return c.dataset.az.split(':')[0]+':'+cardName(c)}
+let favCards=[];
+function favRender(){
+  const a=favGet(),l=$('favList');favCards=[];
+  document.querySelectorAll(FAVC).forEach(c=>{
+    if(!c.querySelector(':scope>.fav-row')){const d=document.createElement('div');d.className='fav-row';d.innerHTML='<button type="button" class="fav-btn" aria-label="В избранное">☆</button>';c.prepend(d)}
+    const on=a.includes(favKey(c)),b=c.querySelector(':scope>.fav-row>.fav-btn');b.classList.toggle('on',on);b.textContent=on?'★':'☆';
+    if(on)favCards.push(c);
+  });
+  const h=favCards.map((c,i)=>'<button type="button" class="cchip on" data-fj="'+i+'">'+esc(cardName(c)||'Без названия')+'</button>').join('');
+  if(l._s!==h){l.innerHTML=h;l._s=h}
+  $('favPanel').hidden=!favCards.length;
+}
+['weapons','characterFeatures','cantripsList','spellsList'].forEach(id=>{const e=$(id);if(e)new MutationObserver(favRender).observe(e,{childList:true})});
+document.addEventListener('focusout',e=>{if(e.target.closest&&e.target.closest('.name-ta'))setTimeout(favRender,50)});
+document.addEventListener('click',e=>{
+  const t=e.target,q=x=>t.closest&&t.closest(x);
+  let b;
+  if(b=q('.fav-btn')){const c=b.closest(FAVC),k=favKey(c),a=favGet(),i=a.indexOf(k);i<0?a.push(k):a.splice(i,1);$('favs').value=JSON.stringify(a);$('favs').dispatchEvent(new Event('input',{bubbles:true}));favRender();return}
+  if(b=q('[data-fj]')){jumpTo(favCards[+b.dataset.fj]);return}
+  if(b=q('[data-hit]')){jumpTo(hits[+b.dataset.hit]);$('searchRes').hidden=true;return}
+  if(b=q('[data-theme-set]')){store.set(THEME_KEY,b.dataset.themeSet);applyTheme(b.dataset.themeSet);syncLook();return}
+  if(b=q('.step')){
+    const inp=b.parentNode.querySelector('input');let max=Infinity;
+    if(inp.id&&inp.id.startsWith('slotLeft'))max=num('slotTotal'+inp.id.slice(8));
+    else if(inp.dataset.k==='chLeft'){const m=b.closest('.charge-row').querySelector('[data-k="chMax"]');max=(+m.value)||Infinity}
+    inp.value=Math.max(0,Math.min(max,(+inp.value||0)+(+b.dataset.d)));inp.dispatchEvent(new Event('input',{bubbles:true}));return}
+  if(q('#lookBtn')){$('lookPop').hidden=!$('lookPop').hidden;$('searchRes').hidden=true;return}
+  if(!q('#lookPop'))$('lookPop').hidden=true;
+  if(!q('#searchRes,#sheetSearch'))$('searchRes').hidden=true;
+});
 
 function edgeDy(y){
   const h=window.innerHeight,edge=Math.max(90,h*.18),sp=r=>Math.ceil(Math.pow(Math.min(r,1.3),1.4)*46);
@@ -1863,7 +1967,7 @@ function holdAllowed(e){
     if(!st)return;
     clearTimeout(st.timer);cancelAnimationFrame(raf);
     st.el.classList.remove('dragging');
-    list.querySelectorAll('.drop-target').forEach(n=>n.classList.remove('drop-target'));
+    list.querySelectorAll('.drop-target,.ins-before,.ins-after').forEach(n=>n.classList.remove('drop-target','ins-before','ins-after'));
     list.classList.remove('drop-root');
     document.body.classList.remove('inv-dragging');
     if(st.ghost)st.ghost.remove();
@@ -1884,16 +1988,20 @@ function holdAllowed(e){
   function update(){
     st.ghost.style.transform=`translate(${st.x+14}px,${st.y+14}px)`;
     const el=document.elementFromPoint(st.x,st.y),host=el&&el.closest('.inv-item');
-    let tgt=null,root=false;
+    let tgt=null,root=false,mode='in';
     if(host){
       const parentEl=st.el.parentElement.closest('.inv-item');
-      if(!st.el.contains(host)&&host!==parentEl)tgt=host;
+      if(!st.el.contains(host)){
+        const r=host.querySelector(':scope>.inv-main').getBoundingClientRect(),f=(st.y-r.top)/r.height;
+        mode=f<0?'in':f<.3?'before':f>1?'in':f>.7?'after':'in';
+        if(mode!=='in'||host!==parentEl)tgt=host;
+      }
     }else if(el&&el.closest('[data-az="static:inventory"]')){
       root=!!st.el.parentElement.closest('.inv-item');           // уже на верхнем уровне — ничего не делаем
     }
-    if(st.tgt!==tgt){if(st.tgt)st.tgt.classList.remove('drop-target');if(tgt)tgt.classList.add('drop-target')}
+    if(st.tgt!==tgt||st.mode!==mode){if(st.tgt)st.tgt.classList.remove('drop-target','ins-before','ins-after');if(tgt)tgt.classList.add(mode==='in'?'drop-target':mode==='before'?'ins-before':'ins-after')}
     list.classList.toggle('drop-root',root);
-    st.tgt=tgt;st.root=root;
+    st.tgt=tgt;st.root=root;st.mode=mode;
   }
   function tick(){                                               // автопрокрутка у краёв экрана
     if(!st||!st.active)return;
@@ -1902,13 +2010,16 @@ function holdAllowed(e){
     raf=requestAnimationFrame(tick);
   }
   function drop(){
-    const from=st.path,to=st.tgt?st.tgt.dataset.path:null,toRoot=st.root;
+    const from=st.path,to=st.tgt?st.tgt.dataset.path:null,toRoot=st.root,mode=st.mode;
     clear();
     if(to==null&&!toRoot)return;
     const it=invGet(from),dest=to==null?null:invGet(to);
     if(!it||(to!=null&&(!dest||dest===it||contains(it,dest))))return;
     const{arr,idx}=invParent(from);arr.splice(idx,1);
-    if(dest){(dest.items=dest.items||[]).push(it);dest.open=true}else S.inventory.push(it);
+    if(dest&&mode!=='in'){
+      const find=(a,o)=>{const i=a.indexOf(o);if(i>=0)return{arr:a,idx:i};for(const x of a){const r=find(x.items||[],o);if(r)return r}return null},p=find(S.inventory,dest);
+      p.arr.splice(p.idx+(mode==='after'?1:0),0,it);
+    }else if(dest){(dest.items=dest.items||[]).push(it);dest.open=true}else S.inventory.push(it);
     renderInventory();saveNow();
   }
   list.addEventListener('pointerdown',e=>{
